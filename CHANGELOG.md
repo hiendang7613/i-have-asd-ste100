@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 — 2026-10-02
+- New closing shape, designed with the first user: a one-sentence **Conclusion:** line, then numbered sections in a fixed order: 0.Done, 1.InProgress, 2.Questions, 3.Pending, 4.Backlog. Empty sections are left out; numbers never move.
+- Questions hold everything that needs the user, including approvals ("Approve: ..."). The recommended option is `<a>` in a code span, because a bare `<a>` or `<b>` is an HTML tag that Markdown renderers delete (checked on GitHub); other options are (b), (c).
+- No emoji and no square brackets anywhere in a reply; status is written in words. Section numbers replace icons as the same anchor in every language.
+- The checker understands the new shape: section order and range, empty sections, exactly one `<a>` per question with options, emoji, square brackets, and replies wrapped in a code block.
+- README, hero image, examples in five languages and social preview follow the new shape.
+
 ## 0.3.0 — 2026-10-02
 - Format layer for fast reading: the five block lines carry fixed icons (🎯 🔑 👉 ❓ 📌) that mean the same in every language; status icons ✅ ❌ ⏳ always come with words; every bullet starts with its key; code spans only for exact strings; a bold budget; tables only for comparisons; no headings in normal replies.
 - The block lines are list items, so Markdown renderers never merge them into one paragraph.

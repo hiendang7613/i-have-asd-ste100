@@ -4,7 +4,7 @@ Ten cases for `claude plugin eval` (native format: `prompt.md` plus `graders/*.m
 
 | Case | What it tests |
 | --- | --- |
-| status-report-en / status-report-vi | Full block, failure and pending approval kept, English and Vietnamese labels |
+| status-report-en / status-report-vi | Conclusion and numbered sections, failure and pending approval kept, English and Vietnamese labels |
 | decision-request-vi | One question, three options, recommended default |
 | bad-news-first-en | The Conclusion line names the skipped step |
 | one-fact-answer | No block for a one-fact answer |
@@ -14,7 +14,7 @@ Ten cases for `claude plugin eval` (native format: `prompt.md` plus `graders/*.m
 | negation-and-condition-en | Negations and conditions survive a summary |
 | many-findings-en | At most five visible items, high severity first, the rest grouped |
 
-Graders: `regex` graders are free (block lines present or absent, no filler, exact answer). `llm` graders are paid and judge
+Graders: `regex` graders are free (conclusion line and numbered sections present or absent, no filler, exact answer). `llm` graders are paid and judge
 meaning (must-keep facts, weight 3) and readability (weight 2).
 
 Activation: the hooks are on by default, so the with-plugin arm gets the rules and the no-plugin arm is the baseline.

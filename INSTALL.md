@@ -23,7 +23,7 @@ I_HAVE_ASD_STE100=off claude                     # this process only
 
 Delete the file or unset the variable to turn it on again. Inside a session, "stop ste mode" anywhere in a prompt
 (outside quotes and code), or the exact prompt "normal mode", stops it for that session; "ste mode" starts it again.
-"no icons" keeps the shape but drops the icons, for terminals that cannot show them.
+The format uses no emoji, so it works in every terminal.
 
 The hooks need Node.js on the PATH. Without Node they do nothing; the manual command still works.
 
@@ -34,8 +34,9 @@ codex plugin marketplace add hiendang7613/i-have-asd-ste100
 codex plugin add i-have-asd-ste100@i-have-asd-ste100
 ```
 
-Codex loads the skill. Current Codex releases do not run plugin hooks, so the rules are not on by default there.
-To make every Codex session use them, add the shape to `~/.codex/AGENTS.md` (an example is in the README's "The shape" table).
+Codex loads the skill and the plugin hooks from `hooks/hooks.json`. On first install, and after the hook definition changes, run `/hooks`, review the plugin hooks, and trust them. Codex skips plugin hooks until you trust the current definition. Start a new session after trusting the hooks: `SessionStart` loads the reply rules, and `UserPromptSubmit` adds the short reminder. Without hook trust, the skill remains available for manual use.
+
+The commands above use the Codex CLI. The ChatGPT web app does not deploy local hook scripts into its runtime.
 
 ## Uninstall
 

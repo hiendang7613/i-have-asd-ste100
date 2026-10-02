@@ -38,6 +38,12 @@ Terminal guidance says the opposite: the CLI Guidelines put the most important i
 No study compares the two in a chat or terminal reply. This plugin puts the block last, because coding agents run in terminals
 and its first user asked for a final conclusion. Saying "conclusion first" moves the block to the top for the session.
 
+## Format choices made with the first user (v0.4)
+
+- **Numbered sections instead of icons.** Numbers are read the same in every language and every terminal, and a reader can answer "2, Q1". Icons were dropped at the user's request; words carry the status.
+- **`<a>` in a code span for the recommended option.** A bare `<a>` or `<b>` is parsed as an HTML tag and deleted by Markdown renderers (checked with the GitHub Markdown API on 2026-10-02); a code span shows it exactly and highlights it.
+- **Every section is a top-level list item.** Bold labels written as plain lines after a nested list are merged into the previous item by CommonMark's lazy continuation rule (checked with the GitHub Markdown API).
+
 ## What we did not take, and why
 
 - **Controlled dictionaries.** They strip the user's own terms, and the ASD-STE100 dictionary is copyrighted.

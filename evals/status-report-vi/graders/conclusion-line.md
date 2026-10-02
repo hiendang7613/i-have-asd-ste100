@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: '^\s*(?:[-*]\s*)?(?:\*\*)?(?:Conclusion|Chốt)(?:\*\*)?\s*:'
+pattern: '^\*\*[^*\n]{1,30}[:：]\*\*\s*\S'
 flags: mi
 match: contains
 weight: 1

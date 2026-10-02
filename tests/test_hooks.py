@@ -73,7 +73,8 @@ class HookTests(unittest.TestCase):
         out = self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "fix the bug"})
         self.assertEqual(out.count("\n"), 1)
         self.assertLess(len(out.encode()), 400)
-        self.assertIn("then the block last: 🎯 Conclusion", out)
+        self.assertIn("0.Done, 1.InProgress, 2.Questions, 3.Pending, 4.Backlog", out)
+        self.assertTrue(out.isascii())
 
     def test_stop_and_restart_work_per_session(self):
         self.opt_in()
@@ -86,18 +87,6 @@ class HookTests(unittest.TestCase):
         self.assertIn("Reply shape", self.run_hook(prose))
         self.assertIn("Reply shape", self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "ste mode"}))
         self.assertIn("Reply shape", self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "next"}))
-
-    def test_no_icons_switches_the_reminder_for_the_session_only(self):
-        def prompt(session, text):
-            return self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": session, "prompt": text})
-        self.assertIn("🎯", prompt("e", "hello"))
-        plain = prompt("e", "please use no icons from now on")
-        self.assertNotIn("🎯", plain)
-        self.assertIn("no icons", plain)
-        self.assertNotIn("🎯", prompt("e", "next"))
-        self.assertIn("🎯", prompt("f", "next"))
-        self.assertIn("🎯", prompt("e", "icons on again"))
-        self.assertIn("🎯", prompt("e", 'the README says "no icons" is a switch'))
 
     def test_odd_session_ids_cannot_escape_the_state_directory(self):
         self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "../../evil", "prompt": "normal mode"})

@@ -6,67 +6,41 @@ Usage:
   cat reply.md | python3 scripts/check_reply.py -    # read standard input
 
 Exit code 0 when there is no violation, 1 otherwise. Warnings never fail the check.
-The check covers what can be counted (block shape, line and sentence length, openers, closers).
+The check covers what can be counted: the conclusion part, section numbers and order, option markers,
+emoji and square brackets, sentence length, openers and closers.
 It cannot judge meaning, accuracy or tone; a passing reply can still be wrong.
 
-Any language: the block is found by its structure (one or five trailing "label: text" lines), so labels in any
-language work. Label order is checked only for label sets it knows. Length is counted in words for scripts that
-separate words with spaces and in characters (converted to word equivalents) for scripts written without spaces.
+Any language: the conclusion part is found by its structure (a bold "label:" line followed by list items
+whose bold labels start with a section number 0 to 4), so labels in any language work.
+Length is counted in words for scripts with spaces and in characters (converted to word equivalents)
+for scripts written without spaces.
 """
 
 import json
 import re
 import sys
 
-LABELS = [  # known label sets, used only to check the order; unknown labels still pass the structure check
-    ("conclusion", ["Conclusion", "Chốt", "Kết luận", "结论", "結論", "결론", "Conclusión", "Fazit", "Conclusão", "Вывод"]),
-    ("approve", ["Approve", "Cần duyệt", "需要批准", "承認", "승인", "Aprobar", "À approuver", "Freigabe", "Aprovar", "Утвердить"]),
-    ("action", ["Your action", "Bạn cần làm", "Anh cần làm", "Chị cần làm", "你需要做", "あなたの作業", "할 일",
-                "Tu acción", "Votre action", "Deine Aufgabe", "Sua ação", "Ваше действие"]),
-    ("question", ["Question", "Câu hỏi", "问题", "質問", "질문", "Pregunta", "Frage", "Pergunta", "Вопрос"]),
-    ("open", ["Open", "Việc còn mở", "Việc mở", "待办", "未完了", "남은 일", "Pendiente", "En cours", "Offen", "Pendente", "Открыто"]),
-]
-ICONS = {"🎯": "conclusion", "🔑": "approve", "👉": "action", "❓": "question", "📌": "open"}
-NO_SPACE_SCRIPTS = [  # (regex, characters per English-word equivalent); see docs/RESEARCH.md
-    # About 1.5 Chinese characters carry one English word (translation ratio, Google Research 2007).
-    (re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]"), 1.5),   # Japanese kana, Chinese and Japanese kanji
-    # No published ratio found for these scripts; 4 characters per word is an unverified placeholder.
-    (re.compile(r"[\u0e00-\u0e7f\u0e80-\u0eff\u1000-\u109f\u1780-\u17ff]"), 4.0),   # Thai, Lao, Myanmar, Khmer
-]
-SENTENCE_END = r"(?<=[.!?。！？؟।])\s*"
-GENERIC_LABEL = re.compile(r"^\s*(?:[-*•]\s*|\d+[.)]\s*)?(?:\*\*)?([^\s:：*][^:：*\n]{0,28}?)(?:\*\*)?\s*[:：]\s*(?:\*\*)?\s*(\S.*)$")
-BLOCK_HEADINGS = {"conclusion", "chốt"}
-MAX_LINE_WORDS = 20
+SECTIONS = {0: "Done", 1: "InProgress", 2: "Questions", 3: "Pending", 4: "Backlog"}
+MAX_CONCLUSION_WORDS = 25
 MAX_SENTENCE_WORDS = 25
 BODY_WORD_BUDGET = 250
 SMALL_ANSWER_WORDS = 40
+NO_SPACE_SCRIPTS = [  # (regex, characters per English-word equivalent); see docs/RESEARCH.md
+    # About 1.5 Chinese characters carry one English word (translation ratio, Google Research 2007).
+    (re.compile(r"[぀-ヿ㐀-䶿一-鿿豈-﫿]"), 1.5),   # Japanese kana, Chinese and Japanese kanji
+    # No published ratio found for these scripts; 4 characters per word is an unverified placeholder.
+    (re.compile(r"[฀-๿຀-໿က-႟ក-៿]"), 4.0),   # Thai, Lao, Myanmar, Khmer
+]
+EMOJI = re.compile(r"[☀-➿⬀-⯿⌀-⏿\U0001F000-\U0001FAFF️]")
+SENTENCE_END = r"(?<=[.!?。！？؟।])\s*"
+CONCLUSION_LINE = re.compile(r"^\*\*([^*:：\n]{1,30})[:：]\*\*\s*(\S.*)$")
+SECTION_LINE = re.compile(r"^[-*]\s+\*\*(\d)\.\s?([^*:：\n]{1,30})[:：]\*\*\s*(.*)$")
+SUB_ITEM = re.compile(r"^\s{2,}[-*]\s+(.*)$")
+RECOMMENDED = "`<a>`"
 OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of course|let me |i'll |i will now|"
                      r"câu hỏi hay|tuyệt|để tôi |chắc chắn rồi)", re.I)
 CLOSERS = re.compile(r"(hope this helps|let me know if|feel free to|happy to help|hy vọng (điều này|giúp)|"
                      r"cứ hỏi nếu|đừng ngần ngại)", re.I)
-LINE_PREFIX = re.compile(r"^\s*(?:[-*•]\s*|\d+[.)]\s*)?(?:\*\*)?")
-ICON_PREFIX = re.compile(r"^\s*(?:[-*•]\s*)?(" + "|".join(ICONS) + r")\s*")
-
-
-def label_of(line):
-    """Return (key, text) for a block line. key is a known role, or "?" for a label in an unknown language.
-    A leading block icon fixes the role in any language."""
-    icon = ICON_PREFIX.match(line)
-    if icon:
-        rest = line[icon.end():]
-        match = re.match(r"(?:\*\*)?[^:：*\n]{1,30}?(?:\*\*)?\s*[:：]\s*(?:\*\*)?\s*(\S.*)$", rest)
-        if match:
-            return ICONS[icon.group(1)], match.group(1).strip()
-    stripped = LINE_PREFIX.sub("", line, count=1)
-    for key, names in LABELS:
-        for name in names:
-            match = re.match(re.escape(name) + r"\s*(?:\*\*)?\s*[:：]\s*(?:\*\*)?\s*(.*)$", stripped, re.I)
-            if match:
-                return key, match.group(1).strip()
-    generic = GENERIC_LABEL.match(line)
-    if generic and len(generic.group(1).split()) <= 4 and not re.search(r"[.!?。`/]", generic.group(1)):
-        return "?", generic.group(2).strip()
-    return None
 
 
 def units(text):
@@ -83,12 +57,6 @@ def units(text):
     return round(count, 1)
 
 
-def is_block_heading(line):
-    text = re.sub(r"[#*_:：\s]+", " ", line).strip().lower()
-    known = {name.lower() for name in LABELS[0][1]}
-    return text in BLOCK_HEADINGS or text in known
-
-
 def strip_code(text):
     return re.sub(r"```.*?```", " ", text, flags=re.S)
 
@@ -100,63 +68,85 @@ def sentences(text):
     return [p.strip() for p in parts if units(p) >= 3]
 
 
-def split_block(text):
-    """Split the reply into body and the trailing conclusion block (a list of (key, text))."""
+def split_reply(text):
+    """Return (body, conclusion_text_or_None, sections) where sections is a list of
+    (number, label, text, sub_items). The conclusion part is the last bold-label line
+    plus the numbered list items after it."""
     lines = text.rstrip().splitlines()
-    trailing, index = [], len(lines) - 1
-    while index >= 0:
-        if not lines[index].strip():
-            index -= 1
-            continue
-        found = label_of(lines[index])
-        if not found:
-            break
-        trailing.insert(0, (index, found))
+    index = len(lines) - 1
+    tail = []
+    while index >= 0 and (not lines[index].strip() or SECTION_LINE.match(lines[index].strip())
+                          or SUB_ITEM.match(lines[index])):
+        tail.insert(0, lines[index])
         index -= 1
-    known = [i for i, (_, (key, _)) in enumerate(trailing) if key == "conclusion"]
-    if known:
-        trailing = trailing[known[-1]:]
-    elif len(trailing) > 5:
-        trailing = trailing[-5:]
-    cut = trailing[0][0] if trailing else len(lines)
-    while cut > 0 and (not lines[cut - 1].strip() or is_block_heading(lines[cut - 1])):
-        cut -= 1
-    return "\n".join(lines[:cut]), [found for _, found in trailing]
+    conclusion = CONCLUSION_LINE.match(lines[index].strip()) if index >= 0 else None
+    has_sections = any(SECTION_LINE.match(line.strip()) for line in tail)
+    if not conclusion or (any(line.strip() for line in tail) and not has_sections):
+        return text, None, []
+    sections = []
+    for line in tail:
+        match = SECTION_LINE.match(line.strip())
+        if match:
+            sections.append((int(match.group(1)), match.group(2).strip(), match.group(3).strip(), []))
+        elif SUB_ITEM.match(line) and sections:
+            sections[-1][3].append(line)
+    return "\n".join(lines[:index]), conclusion.group(2).strip(), sections
+
+
+def question_problems(sub_items):
+    """Each question with two or more options needs exactly one recommended option."""
+    problems = []
+    groups = []
+    for line in sub_items:
+        indent = len(line) - len(line.lstrip())
+        item = SUB_ITEM.match(line).group(1)
+        if indent <= 3:
+            groups.append((item, []))
+        elif groups:
+            groups[-1][1].append(item)
+    for question, options in groups:
+        if len(options) >= 2:
+            marked = sum(RECOMMENDED in option for option in options)
+            if marked != 1:
+                problems.append("Question '%s' has %d options marked `<a>` (need exactly 1)." % (question[:30], marked))
+    return problems
 
 
 def check(text):
-    body, block = split_block(text)
+    body, conclusion, sections = split_reply(text)
     words = units(strip_code(text))
     violations, warnings = [], []
-    order = [key for key, _ in LABELS]
-    keys = [key for key, _ in block]
 
-    if not block:
+    if conclusion is None:
         if words > SMALL_ANSWER_WORDS:
-            violations.append("No conclusion block at the end of a reply longer than %d words." % SMALL_ANSWER_WORDS)
-    elif "?" in keys:
-        if len(block) not in (1, 5):
-            violations.append("The block must have one line or five lines; found %d." % len(block))
-        warnings.append("Block labels not recognised (any language is fine); their order was not checked.")
+            violations.append("No conclusion part at the end of a reply longer than %d words." % SMALL_ANSWER_WORDS)
     else:
-        if keys[0] != "conclusion":
-            violations.append("The block must start with the Conclusion line.")
-        if keys not in (order[:1], order):
-            violations.append("The block must have only the Conclusion line or all five lines in order; found: %s." % ", ".join(keys))
-    for key, line in block:
-        count = units(line)
-        if count > MAX_LINE_WORDS:
-            violations.append("Block line '%s' has %g words (limit %d)." % (key, count, MAX_LINE_WORDS))
-        if not line:
-            violations.append("Block line '%s' is empty; write None in the user's language." % key)
+        if units(conclusion) > MAX_CONCLUSION_WORDS:
+            violations.append("The Conclusion line has %g words (limit %d)." % (units(conclusion), MAX_CONCLUSION_WORDS))
+        numbers = [number for number, _, _, _ in sections]
+        if numbers != sorted(set(numbers)) or any(n not in SECTIONS for n in numbers):
+            violations.append("Sections must be numbered 0 to 4, in order, each once; found %s." % numbers)
+        for number, label, line, subs in sections:
+            if not line and not subs:
+                violations.append("Section %d (%s) is empty; leave it out." % (number, label))
+            if number == 2:
+                violations.extend(question_problems(subs))
+
+    outside_code = re.sub(r"`[^`]*`", "", strip_code(text))
+    if EMOJI.search(outside_code):
+        violations.append("The reply contains emoji; write status in words.")
+    if re.search(r"\*\*\[|^[-*]\s+\[[^\]]+\]", outside_code, re.M):
+        violations.append("Labels use square brackets; write bold labels without them.")
+    if re.search(r"```[^\n]*\n(?:(?!```).)*\*\*\d\.[^*]+:\*\*", text, re.S):
+        violations.append("The conclusion part is inside a code block; the reader would see raw markers.")
 
     body_sentences = sentences(body)
     for sentence in (s for s in body_sentences if units(s) > MAX_SENTENCE_WORDS):
         warnings.append("Long sentence (%g words): %s..." % (units(sentence), sentence[:60]))
     body_words = units(strip_code(body))
-    if block and body_words > BODY_WORD_BUDGET:
+    if conclusion is not None and body_words > BODY_WORD_BUDGET:
         warnings.append("Body has %g words (target about %d); move detail to a file." % (body_words, BODY_WORD_BUDGET))
-    first = next((line for line in strip_code(body).splitlines() if line.strip()), block[0][1] if block else "")
+    first = next((line for line in strip_code(body).splitlines() if line.strip()), conclusion or "")
     if OPENERS.match(re.sub(r"^[#*\s-]+", "", first)):
         violations.append("The reply opens with a filler opener: %s..." % first[:40])
     if body_sentences and CLOSERS.search(body_sentences[-1]):
@@ -169,8 +159,8 @@ def check(text):
         "stats": {
             "words": words,
             "body_words": body_words,
-            "block_lines": keys,
-            "block_line_words": [units(line) for _, line in block],
+            "conclusion_words": units(conclusion) if conclusion else 0,
+            "sections": [number for number, _, _, _ in sections],
             "longest_sentence": max((units(s) for s in body_sentences), default=0),
         },
     }

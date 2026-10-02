@@ -1,11 +1,13 @@
 - **Cause:** `verifyToken` in `src/auth.ts:42` read a custom header. The new client sends `Authorization: Bearer <token>`.
 - **Fix:** `verifyToken` now reads the `Authorization` header.
-- ✅ **Tests:** `npm test` ran 214 tests. 213 pass.
-- ❌ `payment.spec.ts:88` fails. I did not change payment code, and I did not check the cause.
-- **Staging** is deployed.
 
-- 🎯 **Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
-- 🔑 **Approve:** Deploy the login fix to production.
-- 👉 **Your action:** None.
-- ❓ **Question:** Should I check `payment.spec.ts:88` before the production deploy (recommended) or after it?
-- 📌 **Open:** `jsonwebtoken` 8.5.1 is old; I can update it after the deploy.
+**Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
+
+- **0.Done:** Login fix; `npm test` ran 214 tests and 213 pass; staging is deployed.
+- **2.Questions:**
+  - **Q1.** Approve: deploy the login fix to production?
+    - `<a>` Yes, after I check `payment.spec.ts:88`.
+    - (b) Yes, now.
+- **4.Backlog:**
+  - `payment.spec.ts:88` fails; I did not change payment code.
+  - `jsonwebtoken` 8.5.1 is old; update it after the deploy.

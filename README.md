@@ -6,19 +6,19 @@
 
 <p align="center">
   <strong>Agent replies you can read in five seconds.</strong><br>
-  Short body. Five fixed lines at the end. Any language.
+  Key-first bullets. One-sentence conclusion. Five numbered sections. Any language.
 </p>
 
 <p align="center">
   <a href="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4F46E5"></a>
-  <img alt="Version 0.3.0" src="https://img.shields.io/badge/version-0.3.0-4F46E5">
+  <img alt="Version 0.4.0" src="https://img.shields.io/badge/version-0.4.0-4F46E5">
   <img alt="Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-0F172A">
   <img alt="Any language" src="https://img.shields.io/badge/replies-any%20language-F59E0B">
 </p>
 
 <p align="center">
-  <img src="./assets/hero.svg" alt="Left: a default agent reply as one long paragraph. Right: the same facts as short bullets, then five lines marked Conclusion, Approve, Your action, Question and Open." width="900" />
+  <img src="./assets/hero.svg" alt="Left: a default agent reply as one long paragraph. Right: the same facts as key-first bullets, a one-sentence conclusion and numbered sections Done, Questions and Backlog." width="900" />
 </p>
 
 <p align="center">
@@ -30,13 +30,13 @@
   <a href="#faq">FAQ</a>
 </p>
 
-Coding agents bury the one thing you need: what failed, what needs your OK, what is left.
-This plugin gives every reply the same shape. Facts come first, one per line. Five fixed lines close the reply.
-Your eye learns where to look, in every session and in every language.
+Coding agents bury the one thing you need: what failed, what needs your OK, what is still running.
+This plugin gives every reply the same shape. Facts come first, one per line.
+A one-sentence conclusion and five numbered sections close the reply. Your eye learns where to look.
 
 <a name="install"></a>
 
-## ⚡ Install in 30 seconds
+## Install in 30 seconds
 
 Paste this into Claude Code or Codex:
 
@@ -51,58 +51,71 @@ Or by hand:
 claude plugin marketplace add hiendang7613/i-have-asd-ste100
 claude plugin install i-have-asd-ste100@i-have-asd-ste100
 
-# Codex: loads the skill; see INSTALL.md to make it the default
+# Codex CLI: install the plugin, then review and trust its hooks with `/hooks`
 codex plugin marketplace add hiendang7613/i-have-asd-ste100
 codex plugin add i-have-asd-ste100@i-have-asd-ste100
 ```
 
-Nothing to turn on. Say `stop ste mode` to pause it for a session. Details: [INSTALL.md](INSTALL.md).
+After trusting the hooks, start a new session. Say `stop ste mode` to pause the rules for that session. Details: [INSTALL.md](INSTALL.md).
 
 <a name="shape"></a>
 
-## 🧭 The shape
+## The shape
 
-Every reply ends with the same five list items. The icons stay the same in every language, so the block is easy to find.
+Every reply that has more than one fact ends like this:
 
-| Line | What it holds |
-|---|---|
-| 🎯 **Conclusion** | The result in one sentence. Bad news first: failure, skip, blocker, unverified work. |
-| 🔑 **Approve** | What needs your approval. |
-| 👉 **Your action** | What only you can do. |
-| ❓ **Question** | One question, with options and the recommended one marked. |
-| 📌 **Open** | Work still open, and who owns it. |
+**Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
 
-If nothing else is open, only 🎯 appears. A one-fact answer stays one sentence.
-When you ask for only code, only JSON or one command, you get exactly that, with no block.
+- **0.Done:** Login fix; `npm test` ran 214 tests and 213 pass.
+- **1.InProgress:** CI reruns the full suite.
+- **2.Questions:**
+  - **Q1.** Approve: deploy the login fix to production?
+    - `<a>` After CI passes.
+    - (b) Now.
+- **3.Pending:** Review from the other agent.
+- **4.Backlog:** Check `payment.spec.ts:88`, then update `jsonwebtoken`.
+
+| Part | What it holds | Who acts |
+|---|---|---|
+| **Conclusion** | The result in one sentence. Bad news first: failure, skip, blocker, unverified work. | Nobody: it is the verdict |
+| **0.Done** | Finished and checked work, with its evidence | The agent, already |
+| **1.InProgress** | Work running now: builds, jobs, other agents | The agent or a tool, now |
+| **2.Questions** | Everything that needs you: choices, and approvals that start with "Approve:" | You |
+| **3.Pending** | Work waiting for someone or something else | A third party |
+| **4.Backlog** | Work not started yet, in order; the first item is next | The agent, later |
+
+- **Empty sections disappear, numbers never move:** 3 is always Pending, so you can say "answer 2, Q1".
+- **The recommended option** is written as `<a>` in code; the other options are (b), (c). You answer with one letter.
+- **Small answers stay small:** one fact, one sentence. Code-only, JSON-only and one-command requests get exactly that.
 
 <a name="format"></a>
 
-## ✨ Format for fast reading
+## Format for fast reading
 
 | Element | Rule | Why |
 |---|---|---|
-| Bullets | Each line starts with its key: a **bold word**, a `path`, or one status icon | You read the first two words of a line, then decide |
-| Status icons | ✅ done and checked · ❌ failed · ⏳ waiting or running, always followed by words | Shape and color are seen before words; the words keep the meaning when icons do not render |
-| Code spans | Paths, commands, IDs, settings and errors only | Exact strings stay exact and stand out |
-| Bold | Block labels, plus at most one phrase per bullet | Emphasis that is everywhere is nowhere |
+| Bullets | Each line starts with its key: a **bold word** or a `path` | You read the first two words of a line, then decide |
+| Status | Words, not symbols: done, failed, running, waiting, not checked | Words survive every terminal, screen reader and language |
+| Code spans | Paths, commands, IDs, settings, errors, and the `<a>` marker | Exact strings stay exact and stand out |
+| Bold | Labels, plus at most one phrase per bullet | Emphasis that is everywhere is nowhere |
+| Lists | Two levels at most; at most five items you must act on | A short list is read; a long one is skipped |
 | Tables | Only to compare three or more items | Terminals wrap wide tables |
-| Headings and boxes | Not in normal replies | They cost lines and break in narrow terminals |
-| Sentences | One idea each; about 20 words, or the same reading time in your language | Short sentences survive translation and fatigue |
+| Never | Emoji, square brackets, headings, boxes, or a reply wrapped in a code block | They cost lines and show raw markers |
 
-All eight icons are single wide characters (East Asian Width "W"), so they keep terminal columns aligned. No variation selectors.
+Why `<a>` sits in a code span: a bare `<a>` or `<b>` is an HTML tag, and Markdown renderers delete it. We checked this on GitHub.
 
 <a name="compare"></a>
 
-## ⚖️ One task, three replies
+## One task, three replies
 
 Task: *"The login test fails for the new client. Fix it and tell me where we are."* All three replies keep the same six facts.
 
 | | Default agent | [i-have-adhd](https://github.com/ayghri/i-have-adhd) | i-have-asd-ste100 |
 |---|---|---|---|
-| Words (markup not counted) | 166 | 82 | 95 |
+| Words (markup not counted) | 166 | 82 | 84 |
 | Longest sentence | 57 words | 18 words | 15 words |
-| Where the approval is | Mid-paragraph | First and last line ("Next:") | Its own line: 🔑 Approve |
-| The failing test in the summary | "probably unrelated" | Inside a numbered step | 🎯 line: "cause not checked" |
+| Where the approval is | Mid-paragraph | First and last line ("Next:") | 2.Questions, as "Approve:" with options |
+| The failing test in the summary | "probably unrelated" | Inside a numbered step | Conclusion line: "cause not checked" |
 
 The samples are illustrative: written by hand from each project's published rules, not generated by a model.
 
@@ -129,71 +142,73 @@ The samples are illustrative: written by hand from each project's published rule
 
 > - **Cause:** `verifyToken` in `src/auth.ts:42` read a custom header. The new client sends `Authorization: Bearer <token>`.
 > - **Fix:** `verifyToken` now reads the `Authorization` header.
-> - ✅ **Tests:** `npm test` ran 214 tests. 213 pass.
-> - ❌ `payment.spec.ts:88` fails. I did not change payment code, and I did not check the cause.
-> - **Staging** is deployed.
 >
-> - 🎯 **Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
-> - 🔑 **Approve:** Deploy the login fix to production.
-> - 👉 **Your action:** None.
-> - ❓ **Question:** Should I check `payment.spec.ts:88` before the production deploy (recommended) or after it?
-> - 📌 **Open:** `jsonwebtoken` 8.5.1 is old; I can update it after the deploy.
+> **Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
+>
+> - **0.Done:** Login fix; `npm test` ran 214 tests and 213 pass; staging is deployed.
+> - **2.Questions:**
+>   - **Q1.** Approve: deploy the login fix to production?
+>     - `<a>` Yes, after I check `payment.spec.ts:88`.
+>     - (b) Yes, now.
+> - **4.Backlog:**
+>   - `payment.spec.ts:88` fails; I did not change payment code.
+>   - `jsonwebtoken` 8.5.1 is old; update it after the deploy.
 
 Full files: [examples/compare/](examples/compare/).
 </details>
 
-**What it means for you:** i-have-adhd is shorter and starts with the next action, which helps when the hard part is starting.
-i-have-asd-ste100 puts every decision on a fixed, labeled line, which helps when you review many agent reports in a row:
-`grep "🔑"` finds every pending approval in a session log, in any language.
+**What it means for you:** i-have-adhd is the shortest and starts with the next action, which helps when the hard part is starting.
+i-have-asd-ste100 puts every decision in one numbered place, which helps when you review many agent reports in a row.
+The section numbers are the same in every language, so a script can find section 2 in any session log.
 
 <a name="languages"></a>
 
-## 🌍 Any language
+## Any language
 
-The agent writes the labels in your language and keeps them identical for the session. The icons never change.
+The agent writes the label words in your language and keeps them identical for the session. The numbers never change.
 The rules name no language, so they never pull a reply into English.
 
-| Language | 🎯 · 🔑 · 👉 · ❓ · 📌 | Example |
+| Language | Conclusion · 0 · 1 · 2 · 3 · 4 | Example |
 |---|---|---|
-| English | Conclusion · Approve · Your action · Question · Open | [after-en.md](examples/after-en.md) |
-| Tiếng Việt | Chốt · Cần duyệt · Bạn cần làm · Câu hỏi · Việc còn mở | [after-vi.md](examples/after-vi.md) |
-| 中文 | 结论 · 需要批准 · 你需要做 · 问题 · 待办 | [after-zh.md](examples/after-zh.md) |
-| 日本語 | 結論 · 承認 · あなたの作業 · 質問 · 未完了 | [after-ja.md](examples/after-ja.md) |
-| Español | Conclusión · Aprobar · Tu acción · Pregunta · Pendiente | [after-es.md](examples/after-es.md) |
+| English | Conclusion · Done · InProgress · Questions · Pending · Backlog | [after-en.md](examples/after-en.md) |
+| Tiếng Việt | Kết luận · Đã xong · Đang làm · Câu hỏi · Đang chờ · Tồn đọng | [after-vi.md](examples/after-vi.md) |
+| 中文 | 结论 · 已完成 · 进行中 · 问题 · 等待中 · 待办 | [after-zh.md](examples/after-zh.md) |
+| 日本語 | 結論 · 完了 · 進行中 · 質問 · 保留 · バックログ | [after-ja.md](examples/after-ja.md) |
+| Español | Conclusión · Hecho · En curso · Preguntas · Pendiente · Por hacer | [after-es.md](examples/after-es.md) |
 
 Sentence length is measured in words where words have spaces, and in characters for Chinese and Japanese (about 1.5 characters per English word).
 The maintainers wrote these examples. Native speakers: [fix or add your language](.github/ISSUE_TEMPLATE/language.yml).
 
-## 🆚 i-have-adhd and i-have-asd-ste100
+## i-have-adhd and i-have-asd-ste100
 
 | | i-have-adhd | i-have-asd-ste100 |
 |---|---|---|
 | Best for | Starting the next action | Decisions, approvals and status across many agent reports |
-| Reply shape | Next action first, numbered steps, one next step at the end | Key-first bullets, then five fixed lines with icons |
+| Reply shape | Next action first, numbered steps, one next step at the end | Key-first bullets, a one-sentence conclusion, five numbered sections |
 | Turned on | By command; always-on with an opt-in flag | On by default after install; `stop ste mode` or an opt-out file |
 | Drift control | Rules at session start | Session start plus one reminder line per prompt |
 | Languages | Rules in English; README in 10 languages | Language-neutral rules; labels in your language; examples in 5 languages |
 | Runtimes | Claude Code, Codex, Cursor, Gemini, OpenCode, Pi, Qwen, Kimi | Claude Code, Codex |
-| Offline checker | No | `scripts/check_reply.py`: block, icons, line length, any script |
-| Measured evidence | Blind LLM-judge A/B: 14 cases, 3 trials, 4.045 to 4.473 | 10 eval cases written; not run yet, so no scores are claimed |
+| Offline checker | No | `scripts/check_reply.py`: conclusion, section order, `<a>` markers, any script |
+| Measured evidence | Blind LLM-judge A/B, 14 cases, 3 trials: weighted 4.045 to 4.473; its own release gate failed (3 blocking findings remained) | 10 eval cases written; not run yet, so no scores are claimed |
 
 Both are MIT. They agree on more than they differ; pick the one that matches your problem.
 
-## ⚙️ How it works
+## How it works
 
 1. **Session start:** a hook injects the rules ([SKILL.md](skills/i-have-asd-ste100/SKILL.md), under 6.5 KB).
 2. **Every prompt:** one reminder line keeps long sessions from drifting.
-3. **Your words win:** `stop ste mode` pauses it; `ste mode` resumes; `no icons` drops the icons.
+3. **Your words win:** `stop ste mode` pauses it for the session; `ste mode` resumes it.
 4. **Exact output wins:** code-only, JSON-only and single-command requests are never wrapped.
 5. **Safe by design:** the hooks never block a session, make no network call, and stay silent on any error.
 
-## 💸 Cost
+## Cost
 
-About 1,800 tokens at session start and about 90 tokens per prompt. Run `claude plugin details i-have-asd-ste100` for your setup.
+About 1,700 tokens at session start and about 90 tokens per prompt. Run `claude plugin details i-have-asd-ste100` for your setup.
 
 <a name="faq"></a>
 
-## ❓ FAQ
+## FAQ
 
 <details><summary><strong>Is this ASD-STE100 certified?</strong></summary>
 
@@ -205,23 +220,23 @@ No. It borrows general principles of Simplified Technical English and plain-lang
 No. It shapes only the text you read at the end of a turn. Code, commits, pull request bodies, files and messages to other agents keep their own format.
 </details>
 
-<details><summary><strong>My terminal shows boxes instead of icons.</strong></summary>
+<details><summary><strong>Why no emoji?</strong></summary>
 
-Say `no icons`. Every icon is followed by words, so nothing is lost.
+Words work in every terminal, screen reader and language. Section numbers do the job icons did: they mark each part the same way in every language.
 </details>
 
 <details><summary><strong>Can I check a reply offline?</strong></summary>
 
-Yes: `python3 scripts/check_reply.py reply.md`. It checks the shape, the icons and the length in any script. It cannot judge whether a reply is true.
+Yes: `python3 scripts/check_reply.py reply.md`. It checks the conclusion, the section order, the `<a>` markers and the length in any script. It cannot judge whether a reply is true.
 </details>
 
-## 🔬 Evidence, honestly
+## Evidence, honestly
 
-No public project in this space has measured human comprehension. i-have-adhd has the best evidence so far: a blind LLM-judge A/B.
+No public project in this space has measured human comprehension. i-have-adhd has the best evidence so far: a blind LLM-judge A/B whose own release gate still failed.
 This repository has ten eval cases for `claude plugin eval` in [evals/](evals/). They have not run yet, so this README claims no scores.
 The research behind each rule, with sources and strength ratings, is in [docs/RESEARCH.md](docs/RESEARCH.md).
 
-## 🤝 Made for Agent Room
+## Made for Agent Room
 
 [Agent Room](https://github.com/hiendang7613/agent-room-plugin) runs a small team of Claude Code and Codex agents in your project:
 shared tasks, peer review and recovery after a crash. One agent talks to you; the others report through it.

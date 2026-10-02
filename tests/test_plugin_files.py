@@ -46,30 +46,23 @@ class SkillTests(unittest.TestCase):
     def test_skill_stays_small_because_always_on_injects_it_every_session(self):
         self.assertLessEqual(len(self.text.encode()), 6500)
 
-    def test_required_sections_and_language_neutral_labels(self):
-        for heading in ("## Persistence", "## The shape", "## Sentences", "## Protect meaning", "## Tone",
-                        "## When to break the rules", "## Pre-send check"):
+    def test_required_sections_and_the_numbered_conclusion_part(self):
+        for heading in ("## Persistence", "## The shape", "## Format for fast reading", "## Sentences", "## Protect meaning",
+                        "## Tone", "## When to break the rules", "## Pre-send check"):
             self.assertIn(heading, self.text)
-        for label in ("🎯 **Conclusion:**", "🔑 **Approve:**", "👉 **Your action:**", "❓ **Question:**", "📌 **Open:**"):
-            self.assertIn(label, self.text)
-        self.assertIn("Write each label in the user's language", self.text)
+        positions = [self.text.index(label) for label in ("`**Conclusion:**`", "`**0.Done:**`", "`**1.InProgress:**`",
+                                                          "`**2.Questions:**`", "`**3.Pending:**`", "`**4.Backlog:**`")]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("`<a>`", self.text)
+        self.assertIn("Write the label words in the user's language", self.text)
         self.assertIn('"stop ste mode"', self.text)
 
-    def test_injected_rules_name_no_human_language_and_use_only_ascii(self):
-        """A language named in always-on rules pulls replies into that language (caveman's finding)."""
+    def test_injected_rules_name_no_human_language_and_are_ascii_only(self):
+        """A language named in always-on rules pulls replies into that language; the format uses no emoji."""
         body = self.text.split("---", 2)[2]
         names = r"\b(English|Vietnamese|Chinese|Japanese|Korean|Spanish|French|German|Portuguese|Arabic|Russian|Thai|Hindi)\b"
         self.assertNotRegex(body, names)
-        icons = set("🎯🔑👉❓📌✅❌⏳")
-        self.assertEqual({c for c in body if not c.isascii()} - icons, set())
-
-    def test_icons_are_single_wide_code_points_that_do_not_break_terminal_alignment(self):
-        import unicodedata
-        for icon in "🎯🔑👉❓📌✅❌⏳":
-            with self.subTest(icon=icon):
-                self.assertEqual(unicodedata.east_asian_width(icon), "W")
-                self.assertIn(icon, self.text)
-        self.assertNotIn("\ufe0f", self.text)  # no variation selectors, whose width differs between terminals
+        self.assertTrue(body.isascii(), sorted({c for c in body if not c.isascii()}))
 
     def test_public_skill_does_not_hard_code_one_users_form_of_address(self):
         self.assertNotRegex(self.text, r"\bAnh cần làm\b|\banh\b")
