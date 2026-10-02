@@ -92,7 +92,7 @@ The linked [Reddit workflow entry](https://www.reddit.com/r/ClaudeWorkflows/comm
 
 ### Resulting edits to the skill
 
-- Keep the admin-selected six-section format and exact-output exceptions. These are product requirements, not deductions from STE or competitor results.
+- Keep the admin-selected section format (six sections at the time of this pass, eight since 0.8.0) and exact-output exceptions. These are product requirements, not deductions from STE or competitor results.
 - Make brevity and item counts targets. Do not omit required evidence, and do not create an unrequested file only to keep a reply short.
 - Put the useful result in the first body line. Place the one-sentence Conclusion after the body and before the fixed status list. Call this the “Conclusion after the body” so “last” cannot be read as the final output line.
 - Make the pre-send check conditional on the full format. A one-fact or exact-output reply must not be forced into a footer.
