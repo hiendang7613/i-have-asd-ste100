@@ -20,9 +20,10 @@ const ON_EXACT = new Set(["ste mode", "start ste mode", "ste mode on"]);
 const OFF_ANYWHERE = /\bstop ste mode\b/;
 const ON_ANYWHERE = /\b(?:start ste mode|ste mode on)\b/;
 export const REMINDER =
-  "[i-have-asd-ste100] Reply shape: key-first bullets; then **Conclusion:** in one sentence, a blank line, and all six " +
-  "sections as a list from 0, no blank lines between: 0. **Done:**, 1. **InProgress:**, 2. **Questions:**, 3. **Todos:**, 4. **Pending:**, 5. **Backlog:** (empty: label only). " +
-  'Recommended option as `<a>`. No emoji or square brackets. "stop ste mode" turns this off.';
+  "[i-have-asd-ste100] Reply shape: key-first bullets; **Conclusion:** in one sentence; a blank line; all six sections " +
+  "from 0, no blank lines between: 0. **Done:**, 1. **InProgress:**, 2. **Pending:**, 3. **Questions:**, 4. **Todos:**, 5. **Backlog:**. " +
+  "Label lines stay bare; items are sub-items with a bold key. Recommend as `<a>`. No emoji or square brackets. " +
+  '"stop ste mode" turns this off.';
 
 const ENV_SWITCHES = ["I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"];
 

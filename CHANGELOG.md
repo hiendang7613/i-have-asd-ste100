@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0 — 2026-10-02
+- New section order, chosen by the first user: 0. Done, 1. InProgress, 2. Pending, 3. Questions, 4. Todos, 5. Backlog. Work that waits on others now sits next to the work that runs.
+- Each item is a sub-item under its label that starts with a bold key (`   - **Login fix:** merged.`). The label line stays bare, so every section reads the same way.
+- The checker follows the new order, finds Questions at 3, and rejects text on a label line, an item without a bold key, and a question without `**Q1.**`.
+- Examples, README, hero image and the per-prompt reminder use the new shape.
+
 ## 0.6.2 — 2026-10-02
 - Keep the six section labels in English in every reply language, as specified by the admin's global format.
 - Keep empty sections label-only; do not use `None` as a filler.

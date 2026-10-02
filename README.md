@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4F46E5"></a>
-  <img alt="Version 0.6.2" src="https://img.shields.io/badge/version-0.6.2-4F46E5">
+  <img alt="Version 0.7.0" src="https://img.shields.io/badge/version-0.7.0-4F46E5">
   <img alt="Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-0F172A">
   <img alt="Any language" src="https://img.shields.io/badge/replies-any%20language-F59E0B">
 </p>
@@ -66,30 +66,36 @@ Every reply that has more than one fact ends like this:
 
 **Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
 
-0. **Done:** Login fix; `npm test` ran 214 tests and 213 pass.
-1. **InProgress:** CI reruns the full suite.
-2. **Questions:**
+0. **Done:**
+   - **Login fix:** `npm test` ran 214 tests and 213 pass.
+1. **InProgress:**
+   - **CI:** reruns the full suite.
+2. **Pending:**
+   - **Review:** waiting for the other agent.
+3. **Questions:**
    - **Q1.** Approve: deploy the login fix to production?
      - `<a>` After CI passes.
      - (b) Now.
-3. **Todos:** Check `payment.spec.ts:88`.
-4. **Pending:** Review from the other agent.
-5. **Backlog:** Update `jsonwebtoken` in a separate change.
+4. **Todos:**
+   - **Payment test:** check `payment.spec.ts:88`.
+5. **Backlog:**
+   - **jsonwebtoken:** update it in a separate change.
 
 | Part | What it holds | Who acts |
 |---|---|---|
 | **Conclusion** | The result in one sentence. Bad news first: failure, skip, blocker, unverified work. | Nobody: it is the verdict |
 | `0. **Done:**` | Finished and checked work, with its evidence | The agent, already |
 | `1. **InProgress:**` | Work running now: builds, jobs, other agents | The agent or a tool, now |
-| `2. **Questions:**` | Everything that needs you: choices, and approvals that start with "Approve:" | You |
-| `3. **Todos:**` | Work in the current task the agent does next, in order | The agent, next |
-| `4. **Pending:**` | Work waiting for someone or something else | A third party |
+| `2. **Pending:**` | Work waiting for someone or something else | A third party |
+| `3. **Questions:**` | Everything that needs you: choices, and approvals that start with "Approve:" | You |
+| `4. **Todos:**` | Work in the current task the agent does next, in order | The agent, next |
 | `5. **Backlog:**` | Work deferred to later or optional, outside the current task | The agent, later |
 
-- **All six sections, always, as one list from 0 to 5.** An empty one shows only its label, so you always see whether anything runs, waits or comes next. One blank line separates the list from the Conclusion line; none separates the sections. You can answer "2, Q1".
+- **All six sections, always, as one list from 0 to 5.** An empty one shows only its label, so you always see whether anything runs, waits or comes next. One blank line separates the list from the Conclusion line; none separates the sections. You can answer "Q1 a".
 - **The recommended option** is written as `<a>` in code; the other options are (b), (c). You answer with one letter.
 - **Small answers stay small:** one fact, one sentence. Code-only, JSON-only and one-command requests get exactly that.
-- **Empty section:** show only its numbered English label, for example `2. **Questions:**`.
+- **Items:** each one is a sub-item under its label that starts with a bold key, such as `   - **Login fix:** merged.` The label line itself stays bare.
+- **Empty section:** show only its numbered English label, for example `2. **Pending:**`.
 
 <a name="format"></a>
 
@@ -101,7 +107,7 @@ Every reply that has more than one fact ends like this:
 | Status | Words, not symbols: done, failed, running, waiting, not checked | Words survive every terminal, screen reader and language |
 | Code spans | Paths, commands, IDs, settings, errors, and the `<a>` marker | Exact strings stay exact and stand out |
 | Bold | Labels, plus at most one phrase per bullet | Emphasis that is everywhere is nowhere |
-| Lists | Two levels at most; at most five items you must act on | A short list is read; a long one is skipped |
+| Lists | Two levels in the body; at most five items you must act on | A short list is read; a long one is skipped |
 | Tables | Only to compare three or more items | Terminals wrap wide tables |
 | Never | Emoji, square brackets, headings, boxes, or a reply wrapped in a code block | They cost lines and show raw markers |
 
@@ -117,7 +123,7 @@ Task: *"The login test fails for the new client. Fix it and tell me where we are
 |---|---|---|---|
 | Words (markup not counted) | 166 | 82 | 91 |
 | Longest sentence | 57 words | 18 words | 15 words |
-| Where the approval is | Mid-paragraph | First and last line ("Next:") | 2.Questions, as "Approve:" with options |
+| Where the approval is | Mid-paragraph | First and last line ("Next:") | 3.Questions, as "Approve:" with options |
 | The failing test in the summary | "probably unrelated" | Inside a numbered step | Conclusion line: "cause not checked" |
 
 The samples are illustrative: written by hand from each project's published rules, not generated by a model.
@@ -148,22 +154,25 @@ The samples are illustrative: written by hand from each project's published rule
 >
 > **Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
 >
-> 0. **Done:** Login fix; `npm test` ran 214 tests and 213 pass; staging is deployed.
+> 0. **Done:**
+>    - **Login fix:** `npm test` ran 214 tests and 213 pass; staging is deployed.
 > 1. **InProgress:**
-> 2. **Questions:**
+> 2. **Pending:**
+> 3. **Questions:**
 >    - **Q1.** Approve: deploy the login fix to production?
 >      - `<a>` Yes, after I check `payment.spec.ts:88`.
 >      - (b) Yes, now.
-> 3. **Todos:** Check why `payment.spec.ts:88` fails; I did not change payment code.
-> 4. **Pending:**
-> 5. **Backlog:** `jsonwebtoken` 8.5.1 is old; update it after the deploy.
+> 4. **Todos:**
+>    - **Payment test:** find why `payment.spec.ts:88` fails; I did not change payment code.
+> 5. **Backlog:**
+>    - **jsonwebtoken:** 8.5.1 is old; update it after the deploy.
 
 Full files: [examples/compare/](examples/compare/).
 </details>
 
 **What it means for you:** i-have-adhd is the shortest and starts with the next action, which helps when the hard part is starting.
 i-have-asd-ste100 puts every decision in one numbered place, which helps when you review many agent reports in a row.
-The section numbers are the same in every language, so a script can find section 2 in any session log.
+The section numbers are the same in every language, so a script can find section 3 in any session log.
 
 <a name="languages"></a>
 

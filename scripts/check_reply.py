@@ -7,7 +7,8 @@ Usage:
 
 Exit code 0 when there is no violation, 1 otherwise. Warnings never fail the check.
 The check covers what can be checked mechanically: the conclusion part, exact English labels, section numbers
-and order, label-only empty sections, option markers, emoji and square brackets, sentence length, openers and closers.
+and order, label-only section lines with bold-key sub-items, option markers, emoji and square brackets, sentence
+length, openers and closers.
 It cannot judge meaning, accuracy or tone; a passing reply can still be wrong.
 
 Any language: the body can use any language. The conclusion and section labels stay in English.
@@ -19,7 +20,8 @@ import json
 import re
 import sys
 
-SECTIONS = {0: "Done", 1: "InProgress", 2: "Questions", 3: "Todos", 4: "Pending", 5: "Backlog"}
+SECTIONS = {0: "Done", 1: "InProgress", 2: "Pending", 3: "Questions", 4: "Todos", 5: "Backlog"}
+QUESTIONS = 3
 ALWAYS_SHOWN = (0, 1, 2, 3, 4, 5)  # every section is shown; an empty one shows only its label
 MAX_CONCLUSION_WORDS = 25
 MAX_SENTENCE_WORDS = 25
@@ -36,6 +38,8 @@ SENTENCE_END = r"(?<=[.!?。！？؟।])\s*"
 CONCLUSION_LINE = re.compile(r"^\*\*([^*:：\n]{1,30})[:：]\*\*\s*(\S.*)$")
 SECTION_LINE = re.compile(r"^(\d)\.\s+\*\*([^*:：\n]{1,30})[:：]\*\*\s*(.*)$")
 SUB_ITEM = re.compile(r"^\s{2,}[-*]\s+(.*)$")
+BOLD_KEY = re.compile(r"^\*\*[^*\n]{1,40}[:：]\*\*(\s|$)")
+QUESTION_KEY = re.compile(r"^\*\*Q\d+\.\*\*\s")
 RECOMMENDED = "`<a>`"
 OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of course|let me |i'll |i will now|"
                      r"câu hỏi hay|tuyệt|để tôi |chắc chắn rồi)", re.I)
@@ -100,6 +104,15 @@ def split_reply(text):
     return "\n".join(lines[:index]), conclusion.group(1).strip(), conclusion.group(2).strip(), sections, problems
 
 
+def item_problems(number, sub_items):
+    """Each top-level item in a section starts with a bold key; in Questions the key is **Q1.**, **Q2.** and so on."""
+    key = QUESTION_KEY if number == QUESTIONS else BOLD_KEY
+    shown = "**Q1.**" if number == QUESTIONS else "**Key:**"
+    return ["Section %d item must start with %s: %s..." % (number, shown, item[:30])
+            for item in (SUB_ITEM.match(line).group(1) for line in sub_items
+                         if len(line) - len(line.lstrip()) <= 3) if not key.match(item)]
+
+
 def question_problems(sub_items):
     """Each question with two or more options needs exactly one recommended option."""
     problems = []
@@ -142,9 +155,11 @@ def check(text):
         for number, label, line, subs in sections:
             if number in SECTIONS and label != SECTIONS[number]:
                 violations.append("Section %d label must be '%s'; found '%s'." % (number, SECTIONS[number], label))
-            if not subs and line.strip().casefold() == "none":
-                violations.append("Empty section %d must show its label only; remove 'None'." % number)
-            if number == 2:
+            if line.strip():
+                violations.append("Section %d must show its label only on its line; write each item below it as a "
+                                  "sub-item that starts with a bold key." % number)
+            violations.extend(item_problems(number, subs))
+            if number == QUESTIONS:
                 violations.extend(question_problems(subs))
 
     outside_code = re.sub(r"`[^`]*`", "", strip_code(text))

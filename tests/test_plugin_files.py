@@ -51,12 +51,14 @@ class SkillTests(unittest.TestCase):
                         "## Tone", "## When to break the rules", "## Pre-send check"):
             self.assertIn(heading, self.text)
         positions = [self.text.index(label) for label in ("`**Conclusion:**`", "0. **Done:**", "1. **InProgress:**",
-                                                          "2. **Questions:**", "3. **Todos:**", "4. **Pending:**",
+                                                          "2. **Pending:**", "3. **Questions:**", "4. **Todos:**",
                                                           "5. **Backlog:**")]
         self.assertEqual(positions, sorted(positions))
         self.assertIn("`<a>`", self.text)
         self.assertIn("Keep the labels in English exactly as shown", self.text)
         self.assertIn("show only its label with no text after it", self.text)
+        self.assertIn("Never write an item on the label line", self.text)
+        self.assertIn("starting with a bold key", self.text)
         self.assertIn("do not treat syllable spaces as word breaks", self.text)
         self.assertIn("Conclusion after the body", self.text)
         self.assertIn("These are targets, not limits", self.text)

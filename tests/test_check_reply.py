@@ -11,15 +11,20 @@ FULL = """- **Fix:** `verifyToken` now reads the `Authorization` header.
 
 **Conclusion:** Login is fixed; one payment test still fails, cause not checked.
 
-0. **Done:** Login fix merged.
-1. **InProgress:** CI reruns the full suite.
-2. **Questions:**
+0. **Done:**
+   - **Login fix:** merged.
+1. **InProgress:**
+   - **CI:** reruns the full suite.
+2. **Pending:**
+   - **Review:** waiting for the other agent.
+3. **Questions:**
    - **Q1.** Approve: deploy to production?
      - `<a>` After CI passes.
      - (b) Now.
-3. **Todos:** Check `payment.spec.ts:88`.
-4. **Pending:** Review from the other agent.
-5. **Backlog:** Update `jsonwebtoken` in a separate change.
+4. **Todos:**
+   - **Payment test:** check `payment.spec.ts:88`.
+5. **Backlog:**
+   - **jsonwebtoken:** update it in a separate change.
 """
 
 
@@ -40,24 +45,38 @@ class ShapeTests(unittest.TestCase):
     def test_all_six_sections_are_always_shown_and_empty_ones_show_only_the_label(self):
         alone = "I renamed the file.\n\n**Conclusion:** The file is renamed.\n"
         self.assertTrue(any("must be shown" in v for v in check(alone)["violations"]))
-        labels = ["Done", "InProgress", "Questions", "Todos", "Pending", "Backlog"]
+        labels = ["Done", "InProgress", "Pending", "Questions", "Todos", "Backlog"]
         minimal = alone + "\n" + "\n".join("%d. **%s:**" % (n, label) for n, label in enumerate(labels)) + "\n"
         self.assertTrue(check(minimal)["ok"], check(minimal))
-        no_pending = FULL.replace("4. **Pending:** Review from the other agent.\n", "")
+        no_pending = FULL.replace("2. **Pending:**\n   - **Review:** waiting for the other agent.\n", "")
         self.assertNotEqual(no_pending, FULL)
-        self.assertTrue(any("4 must be shown" in v for v in check(no_pending)["violations"]))
-        empty = FULL.replace("1. **InProgress:** CI reruns the full suite.", "1. **InProgress:**")
+        self.assertTrue(any("2 must be shown" in v for v in check(no_pending)["violations"]))
+        empty = FULL.replace("1. **InProgress:**\n   - **CI:** reruns the full suite.", "1. **InProgress:**")
         self.assertNotEqual(empty, FULL)
         self.assertTrue(check(empty)["ok"], check(empty))
         filler = empty.replace("1. **InProgress:**", "1. **InProgress:** None")
         self.assertTrue(any("show its label only" in v for v in check(filler)["violations"]))
+
+    def test_items_are_sub_items_that_start_with_a_bold_key(self):
+        inline = FULL.replace("0. **Done:**\n   - **Login fix:** merged.", "0. **Done:** Login fix merged.")
+        self.assertNotEqual(inline, FULL)
+        self.assertTrue(any("Section 0 must show its label only" in v for v in check(inline)["violations"]))
+        plain = FULL.replace("   - **Payment test:** check", "   - Check")
+        self.assertNotEqual(plain, FULL)
+        self.assertTrue(any("Section 4 item must start with **Key:**" in v for v in check(plain)["violations"]))
+        unnumbered = FULL.replace("   - **Q1.** Approve:", "   - Approve:")
+        self.assertNotEqual(unnumbered, FULL)
+        self.assertTrue(any("Section 3 item must start with **Q1.**" in v for v in check(unnumbered)["violations"]))
+        detail = FULL.replace("   - **CI:** reruns the full suite.", "   - **CI:** reruns the full suite.\n     - job 812, about 9 minutes left")
+        self.assertNotEqual(detail, FULL)
+        self.assertTrue(check(detail)["ok"], check(detail))
 
     def test_small_answers_need_nothing(self):
         self.assertTrue(check("102.")["ok"])
         self.assertTrue(check('```json\n{"status": "ok", "count": 3}\n```')["ok"])
 
     def test_sections_out_of_order_repeated_or_out_of_range_fail(self):
-        swapped = FULL.replace("3. **Todos:**", "9. **Todos:**").replace("4. **Pending:**", "3. **Pending:**").replace("9. **Todos:**", "4. **Todos:**")
+        swapped = FULL.replace("3. **Questions:**", "9. **Questions:**").replace("2. **Pending:**", "3. **Pending:**").replace("9. **Questions:**", "2. **Questions:**")
         self.assertNotEqual(swapped, FULL)
         self.assertFalse(check(swapped)["ok"])
         self.assertFalse(check(FULL.replace("5. **Backlog:**", "6. **Backlog:**"))["ok"])
@@ -67,7 +86,7 @@ class ShapeTests(unittest.TestCase):
         glued = FULL.replace("cause not checked.\n\n0.", "cause not checked.\n0.")
         self.assertNotEqual(glued, FULL)
         self.assertTrue(any("blank line between the Conclusion line" in v for v in check(glued)["violations"]))
-        loose = FULL.replace("\n3. **Todos:**", "\n\n3. **Todos:**")
+        loose = FULL.replace("\n4. **Todos:**", "\n\n4. **Todos:**")
         self.assertNotEqual(loose, FULL)
         self.assertTrue(any("without blank lines" in v for v in check(loose)["violations"]))
 
@@ -86,13 +105,13 @@ class ShapeTests(unittest.TestCase):
 
 class StyleTests(unittest.TestCase):
     def test_emoji_and_square_brackets_fail_but_code_spans_may_hold_anything(self):
-        self.assertFalse(check(FULL.replace("0. **Done:**", "0. **Done:** ✅"))["ok"])
+        self.assertFalse(check(FULL.replace("**Login fix:** merged.", "**Login fix:** merged ✅"))["ok"])
         self.assertFalse(check(FULL.replace("**Conclusion:**", "\U0001F3AF **Conclusion:**"))["ok"])
         self.assertFalse(check(FULL.replace("0. **Done:**", "0. **[Done]:**"))["ok"])
         bracket_body = FULL.replace("- **Fix:**", "- **[Fix]:**")
         self.assertNotEqual(bracket_body, FULL)
         self.assertTrue(any("square brackets" in v for v in check(bracket_body)["violations"]))
-        self.assertTrue(check(FULL.replace("3. **Todos:** Check `payment.spec.ts:88`.", "3. **Todos:** Check `arr[0]` in `payment.spec.ts:88`."))["ok"])
+        self.assertTrue(check(FULL.replace("check `payment.spec.ts:88`.", "check `arr[0]` in `payment.spec.ts:88`."))["ok"])
 
     def test_conclusion_wrapped_in_a_code_block_fails(self):
         wrapped = "Here is the status.\n\n```markdown\n" + FULL + "```\n\n**Conclusion:** See above.\n"
@@ -117,9 +136,9 @@ class StyleTests(unittest.TestCase):
 class MultilingualTests(unittest.TestCase):
     def test_body_can_be_multilingual_but_labels_stay_english(self):
         swahili = ("- **Kurekebisha:** Kuingia kumerekebishwa.\n\n**Hitimisho:** Jaribio moja la malipo bado linashindwa.\n\n"
-                   "0. **Imekamilika:** Kuingia kumerekebishwa.\n1. **Inaendelea:**\n2. **Maswali:**\n"
+                   "0. **Imekamilika:**\n   - **Kuingia:** kumerekebishwa.\n1. **Inaendelea:**\n2. **Inasubiri:**\n3. **Maswali:**\n"
                    "   - **Q1.** Niangalie sasa?\n     - `<a>` Ndiyo.\n     - (b) Baadaye.\n"
-                   "3. **Kazi zijazo:**\n4. **Inasubiri:**\n5. **Yaliyobaki:** Kusasisha jsonwebtoken.\n")
+                   "4. **Kazi zijazo:**\n5. **Yaliyobaki:**\n   - **jsonwebtoken:** kusasisha.\n")
         report = check(swahili)
         self.assertFalse(report["ok"], report)
         self.assertTrue(any("conclusion label must be exactly" in v for v in report["violations"]))
@@ -134,7 +153,9 @@ class MultilingualTests(unittest.TestCase):
         self.assertEqual(check(two)["warnings"], [])
 
     def test_fullwidth_colon_labels(self):
-        report = check((ROOT / "examples/after-zh.md").read_text())
+        wide = FULL.replace("**Conclusion:**", "**Conclusion：**").replace("**Done:**", "**Done：**").replace("**Login fix:**", "**登录修复：**")
+        self.assertNotEqual(wide, FULL)
+        report = check(wide)
         self.assertTrue(report["ok"], report)
         self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
 
