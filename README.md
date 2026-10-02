@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4F46E5"></a>
-  <img alt="Version 0.8.1" src="https://img.shields.io/badge/version-0.8.1-4F46E5">
+  <img alt="Version 0.9.0" src="https://img.shields.io/badge/version-0.9.0-4F46E5">
   <img alt="Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-0F172A">
   <img alt="Any language" src="https://img.shields.io/badge/replies-any%20language-F59E0B">
 </p>
@@ -102,6 +102,7 @@ Every reply that has more than one fact ends like this:
 - **All eight sections, always, as one list from 0 to 7.** An empty one shows only its label, so you always see whether anything runs, waits or comes next. One blank line separates the list from the Conclusion line; none separates the sections. You can answer "Q1 a, R1 c, I1 b" in one line.
 - **The recommended option** is written as `<a>` in code; the other options are (b), (c). You answer with one letter.
 - **Small answers stay small:** one fact, one sentence. Code-only, JSON-only and one-command requests get exactly that.
+- **One home per item:** each item sits in one section only. When you decide, it moves: accepted to Todos, deferred to Backlog.
 - **Items:** each one is a sub-item under its label that starts with a bold key, such as `   - **Login fix:** merged.` The label line itself stays bare.
 - **Empty section:** show only its numbered English label, for example `2. **Pending:**`.
 

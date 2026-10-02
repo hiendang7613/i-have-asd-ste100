@@ -61,6 +61,11 @@ class SkillTests(unittest.TestCase):
         self.assertIn("starting with a bold key", self.text)
         self.assertIn("An empty Risks label means you checked and found none", self.text)
         self.assertIn("each risk and idea ends with one choice line", self.text)
+        for rule in ("Open with the direct answer, action or blocker", "Put each item in one section only",
+                     "accepted to Todos, deferred to Backlog", "adds no new fact or evidence list",
+                     "Write status in words, in the user's language",
+                     "Only a format the user or project asks for replaces this shape"):
+            self.assertIn(rule, self.text)
         self.assertIn("do not treat syllable spaces as word breaks", self.text)
         self.assertIn("Conclusion after the body", self.text)
         self.assertIn("These are targets, not limits", self.text)

@@ -154,6 +154,18 @@ class ShapeTests(unittest.TestCase):
         self.assertNotEqual(open_question, FULL)
         self.assertTrue(check(open_question)["ok"], check(open_question))
 
+    def test_an_item_listed_in_two_sections_is_warned(self):
+        twice = FULL.replace("5. **Backlog:**\n   - **Docs:** update the login guide later.",
+                             "5. **Backlog:**\n   - **Payment test:** check it again next week.")
+        self.assertNotEqual(twice, FULL)
+        report = check(twice)
+        self.assertTrue(report["ok"], report)
+        self.assertTrue(any("'payment test' appears in sections 4 and 5" in w for w in report["warnings"]), report["warnings"])
+        self.assertFalse(any("appears in sections" in w for w in check(FULL)["warnings"]))
+        nested = FULL.replace("   - **CI:** reruns the full suite.", "   - **CI:** reruns the full suite.\n     - **Payment test:** included in this run.")
+        self.assertNotEqual(nested, FULL)
+        self.assertFalse(any("appears in sections" in w for w in check(nested)["warnings"]), check(nested)["warnings"])
+
     def test_conclusion_line_length(self):
         long_line = FULL.replace("Login is fixed; one payment test still fails, cause not checked.", " ".join(["word"] * 26) + ".")
         self.assertTrue(any("Conclusion line has 26" in v for v in check(long_line)["violations"]))

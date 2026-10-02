@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0 — 2026-10-02
+Rule clarifications from the Codex review of 0.8.1; the eight-section format does not change.
+- The body opens with the direct answer, action or blocker. The Conclusion gives the overall state and the decisive caveat; it may restate the core result but adds no new fact or evidence list.
+- Each item sits in one section only, with a routing rule for every section. Once the user decides, the item moves: accepted to Todos, deferred to Backlog. The checker warns when the same bold key appears in two sections.
+- Status words follow the user's language; only the section labels and the Q, R, I and `<a>` markers stay fixed.
+- Harness and project rules on tools, safety and permissions outrank the skill; only a format the user or project asks for replaces the shape.
+- The pre-send check points back to the shape instead of repeating it, which keeps the skill under its size limit.
+
 ## 0.8.1 — 2026-10-02
 - README tagline and research notes now say eight sections; no rule change.
 

@@ -144,6 +144,24 @@ def question_problems(number, sub_items):
     return problems
 
 
+def duplicate_items(sections):
+    """An item belongs in one section only; the same bold key in two sections is likely one item listed twice."""
+    seen, warnings = {}, []
+    for number, _, _, subs in sections:
+        for line in subs:
+            if len(line) - len(line.lstrip()) > 3:
+                continue
+            key = BOLD_KEY.match(SUB_ITEM.match(line).group(1))
+            if not key:
+                continue
+            name = key.group(0).strip().strip("*:：").casefold()
+            if name in seen and seen[name] != number:
+                warnings.append("Item '%s' appears in sections %d and %d; put each item in one section only."
+                                % (name, seen[name], number))
+            seen.setdefault(name, number)
+    return warnings
+
+
 def check(text):
     body, conclusion_label, conclusion, sections, layout = split_reply(text)
     words = units(strip_code(text))
@@ -173,6 +191,7 @@ def check(text):
             violations.extend(item_problems(number, subs))
             if number in ID_KEYS:
                 violations.extend(question_problems(number, subs))
+        warnings.extend(duplicate_items(sections))
 
     outside_code = re.sub(r"`[^`]*`", "", strip_code(text))
     if EMOJI.search(outside_code):
