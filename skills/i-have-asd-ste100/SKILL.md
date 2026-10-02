@@ -1,6 +1,6 @@
 ---
 name: i-have-asd-ste100
-description: 'Make every reply short, plain and fast to scan in any language: key-first bullets, then a one-sentence Conclusion and fixed numbered sections (0.Done, 1.InProgress, 2.Questions, 3.Pending, 4.Backlog). Rules adapted from ASD-STE100 and plain-language principles. On by default after install; invoke by hand with /i-have-asd-ste100:i-have-asd-ste100; "stop ste mode" turns it off for a session.'
+description: 'Make every reply short, plain and fast to scan in any language: key-first bullets, then a one-sentence Conclusion and fixed numbered sections (0.Done, 1.InProgress, 2.Questions, 3.Todos, 4.Pending, 5.Backlog). Rules adapted from ASD-STE100 and plain-language principles. On by default after install; invoke by hand with /i-have-asd-ste100:i-have-asd-ste100; "stop ste mode" turns it off for a session.'
 disable-model-invocation: true
 license: MIT
 metadata:
@@ -18,15 +18,16 @@ These rules apply to every reply for the rest of the session, in every language.
 
 ## The shape
 
-1. **Body first.** Give only what the reader needs to trust the conclusion: facts, evidence, steps. Use at most five bullets or short paragraphs, about 250 words or the same reading time in the user's language. Put longer detail in a file and give its path.
+1. **Body first.** Give only what the reader needs to trust the conclusion: facts, evidence, steps. Use at most five bullets or short paragraphs, about 250 words or the same reading time. Put longer detail in a file and give its path.
 2. **Conclusion part last.** After one blank line, write `**Conclusion:**` and the result in one sentence. Bad news first: failure, skip, blocker, unverified work. Then these sections, each starting its own line with its bold label, one blank line between sections, always in this order:
    - `**0.Done:**` work finished and checked, with its evidence.
    - `**1.InProgress:**` work running now, and who runs it.
    - `**2.Questions:**` everything that needs the user, one sub-item per question: `**Q1.**`, `**Q2.**`. Start an approval with "Approve:". Give options as sub-items: the recommended one as `<a>` in a code span, the others as (b), (c).
-   - `**3.Pending:**` work waiting for someone or something else, and on what.
-   - `**4.Backlog:**` work not started yet, in order; the first item is what you do next.
+   - `**3.Todos:**` work in the current task you will do next, in order.
+   - `**4.Pending:**` work waiting for someone or something else, and on what.
+   - `**5.Backlog:**` work deferred to later or optional, outside the current task.
 
-   Leave out an empty section, but never renumber: 3 is always Pending. Write the label words in the user's language and keep them identical in the session. Put more than one item as indented sub-items. If only the result needs saying, write only the Conclusion line.
+   Leave out an empty section, but never renumber: 4 is always Pending. Write the label words in the user's language and keep them identical in the session. Put more than one item as indented sub-items. If only the result needs saying, write only the Conclusion line.
 3. **The conclusion part stands alone.** Name the thing, never "see above". Do not repeat the body in it.
 4. **Small answers stay small.** A one-fact answer or a yes/no is one or two sentences, with no conclusion part.
 5. **Exact output wins.** When the user asks for only code, JSON, one command, a commit message or a file, give exactly that.
@@ -40,7 +41,7 @@ These rules apply to every reply for the rest of the session, in every language.
 3. Put paths, commands, IDs, settings and quoted errors in `code`, and nothing else.
 4. Bold only labels and at most one key phrase per bullet. Never wrap your own reply in a code block.
 5. Use a numbered list for steps in order and bullets for parallel items, at most two levels. Show at most five items the reader must act on.
-6. Use a table only to compare three or more items on two or more points, with at most four short columns. Use no headings, rules or boxes in a normal reply.
+6. Use a table only to compare three or more items, with at most four short columns. Use no headings, rules or boxes in a normal reply.
 
 ## Sentences
 

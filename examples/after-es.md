@@ -10,6 +10,6 @@
     - `<a>` Sí, ahora.
     - (b) Después de fusionar.
 
-**4.Por hacer:**
-  - `payment.spec.ts:88` falla; no cambié el código de pagos.
-  - `jsonwebtoken` 8.5.1 está desactualizado; actualizarlo tras revisar los pagos.
+**3.Por hacer:** Buscar por qué falla `payment.spec.ts:88`; no cambié el código de pagos.
+
+**5.Más adelante:** `jsonwebtoken` 8.5.1 está desactualizado; actualizarlo en un cambio aparte.

@@ -10,6 +10,6 @@
     - `<a>` Yes, check it now.
     - (b) After the merge.
 
-**4.Backlog:**
-  - `payment.spec.ts:88` fails; I did not change payment code.
-  - `jsonwebtoken` 8.5.1 is old; update it after the payment check.
+**3.Todos:** Check why `payment.spec.ts:88` fails; I did not change payment code.
+
+**5.Backlog:** `jsonwebtoken` 8.5.1 is old; update it in a separate change.

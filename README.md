@@ -6,13 +6,13 @@
 
 <p align="center">
   <strong>Agent replies you can read in five seconds.</strong><br>
-  Key-first bullets. One-sentence conclusion. Five numbered sections. Any language.
+  Key-first bullets. One-sentence conclusion. Six numbered sections. Any language.
 </p>
 
 <p align="center">
   <a href="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4F46E5"></a>
-  <img alt="Version 0.4.1" src="https://img.shields.io/badge/version-0.4.1-4F46E5">
+  <img alt="Version 0.5.0" src="https://img.shields.io/badge/version-0.5.0-4F46E5">
   <img alt="Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-0F172A">
   <img alt="Any language" src="https://img.shields.io/badge/replies-any%20language-F59E0B">
 </p>
@@ -32,7 +32,7 @@
 
 Coding agents bury the one thing you need: what failed, what needs your OK, what is still running.
 This plugin gives every reply the same shape. Facts come first, one per line.
-A one-sentence conclusion and five numbered sections close the reply. Your eye learns where to look.
+A one-sentence conclusion and six numbered sections close the reply. Your eye learns where to look.
 
 <a name="install"></a>
 
@@ -75,9 +75,11 @@ Every reply that has more than one fact ends like this:
     - `<a>` After CI passes.
     - (b) Now.
 
-**3.Pending:** Review from the other agent.
+**3.Todos:** Check `payment.spec.ts:88`.
 
-**4.Backlog:** Check `payment.spec.ts:88`, then update `jsonwebtoken`.
+**4.Pending:** Review from the other agent.
+
+**5.Backlog:** Update `jsonwebtoken` in a separate change.
 
 | Part | What it holds | Who acts |
 |---|---|---|
@@ -85,10 +87,11 @@ Every reply that has more than one fact ends like this:
 | **0.Done** | Finished and checked work, with its evidence | The agent, already |
 | **1.InProgress** | Work running now: builds, jobs, other agents | The agent or a tool, now |
 | **2.Questions** | Everything that needs you: choices, and approvals that start with "Approve:" | You |
-| **3.Pending** | Work waiting for someone or something else | A third party |
-| **4.Backlog** | Work not started yet, in order; the first item is next | The agent, later |
+| **3.Todos** | Work in the current task the agent does next, in order | The agent, next |
+| **4.Pending** | Work waiting for someone or something else | A third party |
+| **5.Backlog** | Work deferred to later or optional, outside the current task | The agent, later |
 
-- **Each section starts its own line, after a blank line.** Empty sections disappear and numbers never move; 3 is always Pending, so you can say "answer 2, Q1".
+- **Each section starts its own line, after a blank line.** Empty sections disappear and numbers never move; 4 is always Pending, so you can say "answer 2, Q1".
 - **The recommended option** is written as `<a>` in code; the other options are (b), (c). You answer with one letter.
 - **Small answers stay small:** one fact, one sentence. Code-only, JSON-only and one-command requests get exactly that.
 
@@ -116,7 +119,7 @@ Task: *"The login test fails for the new client. Fix it and tell me where we are
 
 | | Default agent | [i-have-adhd](https://github.com/ayghri/i-have-adhd) | i-have-asd-ste100 |
 |---|---|---|---|
-| Words (markup not counted) | 166 | 82 | 84 |
+| Words (markup not counted) | 166 | 82 | 87 |
 | Longest sentence | 57 words | 18 words | 15 words |
 | Where the approval is | Mid-paragraph | First and last line ("Next:") | 2.Questions, as "Approve:" with options |
 | The failing test in the summary | "probably unrelated" | Inside a numbered step | Conclusion line: "cause not checked" |
@@ -156,9 +159,9 @@ The samples are illustrative: written by hand from each project's published rule
 >     - `<a>` Yes, after I check `payment.spec.ts:88`.
 >     - (b) Yes, now.
 >
-> **4.Backlog:**
->   - `payment.spec.ts:88` fails; I did not change payment code.
->   - `jsonwebtoken` 8.5.1 is old; update it after the deploy.
+> **3.Todos:** Check why `payment.spec.ts:88` fails; I did not change payment code.
+>
+> **5.Backlog:** `jsonwebtoken` 8.5.1 is old; update it after the deploy.
 
 Full files: [examples/compare/](examples/compare/).
 </details>
@@ -174,13 +177,13 @@ The section numbers are the same in every language, so a script can find section
 The agent writes the label words in your language and keeps them identical for the session. The numbers never change.
 The rules name no language, so they never pull a reply into English.
 
-| Language | Conclusion · 0 · 1 · 2 · 3 · 4 | Example |
+| Language | Conclusion · 0 · 1 · 2 · 3 · 4 · 5 | Example |
 |---|---|---|
-| English | Conclusion · Done · InProgress · Questions · Pending · Backlog | [after-en.md](examples/after-en.md) |
-| Tiếng Việt | Kết luận · Đã xong · Đang làm · Câu hỏi · Đang chờ · Tồn đọng | [after-vi.md](examples/after-vi.md) |
-| 中文 | 结论 · 已完成 · 进行中 · 问题 · 等待中 · 待办 | [after-zh.md](examples/after-zh.md) |
-| 日本語 | 結論 · 完了 · 進行中 · 質問 · 保留 · バックログ | [after-ja.md](examples/after-ja.md) |
-| Español | Conclusión · Hecho · En curso · Preguntas · Pendiente · Por hacer | [after-es.md](examples/after-es.md) |
+| English | Conclusion · Done · InProgress · Questions · Todos · Pending · Backlog | [after-en.md](examples/after-en.md) |
+| Tiếng Việt | Kết luận · Đã xong · Đang làm · Câu hỏi · Việc cần làm · Đang chờ · Tồn đọng | [after-vi.md](examples/after-vi.md) |
+| 中文 | 结论 · 已完成 · 进行中 · 问题 · 待办 · 等待中 · 以后再做 | [after-zh.md](examples/after-zh.md) |
+| 日本語 | 結論 · 完了 · 進行中 · 質問 · やること · 保留 · バックログ | [after-ja.md](examples/after-ja.md) |
+| Español | Conclusión · Hecho · En curso · Preguntas · Por hacer · Pendiente · Más adelante | [after-es.md](examples/after-es.md) |
 
 Sentence length is measured in words where words have spaces, and in characters for Chinese and Japanese (about 1.5 characters per English word).
 The maintainers wrote these examples. Native speakers: [fix or add your language](.github/ISSUE_TEMPLATE/language.yml).
@@ -190,7 +193,7 @@ The maintainers wrote these examples. Native speakers: [fix or add your language
 | | i-have-adhd | i-have-asd-ste100 |
 |---|---|---|
 | Best for | Starting the next action | Decisions, approvals and status across many agent reports |
-| Reply shape | Next action first, numbered steps, one next step at the end | Key-first bullets, a one-sentence conclusion, five numbered sections |
+| Reply shape | Next action first, numbered steps, one next step at the end | Key-first bullets, a one-sentence conclusion, six numbered sections |
 | Turned on | By command; always-on with an opt-in flag | On by default after install; `stop ste mode` or an opt-out file |
 | Drift control | Rules at session start | Session start plus one reminder line per prompt |
 | Languages | Rules in English; README in 10 languages | Language-neutral rules; labels in your language; examples in 5 languages |

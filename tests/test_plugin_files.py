@@ -51,7 +51,8 @@ class SkillTests(unittest.TestCase):
                         "## Tone", "## When to break the rules", "## Pre-send check"):
             self.assertIn(heading, self.text)
         positions = [self.text.index(label) for label in ("`**Conclusion:**`", "`**0.Done:**`", "`**1.InProgress:**`",
-                                                          "`**2.Questions:**`", "`**3.Pending:**`", "`**4.Backlog:**`")]
+                                                          "`**2.Questions:**`", "`**3.Todos:**`", "`**4.Pending:**`",
+                                                          "`**5.Backlog:**`")]
         self.assertEqual(positions, sorted(positions))
         self.assertIn("`<a>`", self.text)
         self.assertIn("Write the label words in the user's language", self.text)

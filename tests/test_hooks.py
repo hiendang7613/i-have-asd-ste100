@@ -73,7 +73,7 @@ class HookTests(unittest.TestCase):
         out = self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "fix the bug"})
         self.assertEqual(out.count("\n"), 1)
         self.assertLess(len(out.encode()), 400)
-        self.assertIn("0.Done, 1.InProgress, 2.Questions, 3.Pending, 4.Backlog", out)
+        self.assertIn("0.Done, 1.InProgress, 2.Questions, 3.Todos, 4.Pending, 5.Backlog", out)
         self.assertTrue(out.isascii())
 
     def test_stop_and_restart_work_per_session(self):

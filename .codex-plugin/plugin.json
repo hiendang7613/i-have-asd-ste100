@@ -1,6 +1,6 @@
 {
   "name": "i-have-asd-ste100",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Short, plain, predictable replies: a short body in one-idea sentences, then a fixed conclusion block at the end. Rules adapted from ASD-STE100 principles.",
   "author": {
     "name": "hiendang7613"
@@ -17,7 +17,7 @@
   "interface": {
     "displayName": "I Have ASD-STE100",
     "shortDescription": "Plain, predictable replies with a closing conclusion block",
-    "longDescription": "Shape Codex replies: key-first bullets, then a one-sentence conclusion and numbered sections (0.Done, 1.InProgress, 2.Questions, 3.Pending, 4.Backlog) that a reader can trust on their own.",
+    "longDescription": "Shape Codex replies: key-first bullets, then a one-sentence conclusion and numbered sections (0.Done, 1.InProgress, 2.Questions, 3.Todos, 4.Pending, 5.Backlog) that a reader can trust on their own.",
     "developerName": "hiendang7613",
     "category": "Productivity",
     "capabilities": [

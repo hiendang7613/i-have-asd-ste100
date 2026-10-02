@@ -10,6 +10,6 @@
     - `<a>` Yes, after I check `payment.spec.ts:88`.
     - (b) Yes, now.
 
-**4.Backlog:**
-  - `payment.spec.ts:88` fails; I did not change payment code.
-  - `jsonwebtoken` 8.5.1 is old; update it after the deploy.
+**3.Todos:** Check why `payment.spec.ts:88` fails; I did not change payment code.
+
+**5.Backlog:** `jsonwebtoken` 8.5.1 is old; update it after the deploy.

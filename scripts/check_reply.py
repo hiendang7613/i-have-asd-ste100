@@ -11,7 +11,7 @@ emoji and square brackets, sentence length, openers and closers.
 It cannot judge meaning, accuracy or tone; a passing reply can still be wrong.
 
 Any language: the conclusion part is found by its structure (a bold "label:" line followed by list items
-whose bold labels start with a section number 0 to 4), so labels in any language work.
+whose bold labels start with a section number 0 to 5), so labels in any language work.
 Length is counted in words for scripts with spaces and in characters (converted to word equivalents)
 for scripts written without spaces.
 """
@@ -20,7 +20,7 @@ import json
 import re
 import sys
 
-SECTIONS = {0: "Done", 1: "InProgress", 2: "Questions", 3: "Pending", 4: "Backlog"}
+SECTIONS = {0: "Done", 1: "InProgress", 2: "Questions", 3: "Todos", 4: "Pending", 5: "Backlog"}
 MAX_CONCLUSION_WORDS = 25
 MAX_SENTENCE_WORDS = 25
 BODY_WORD_BUDGET = 250
@@ -128,7 +128,7 @@ def check(text):
             violations.append("The Conclusion line has %g words (limit %d)." % (units(conclusion), MAX_CONCLUSION_WORDS))
         numbers = [number for number, _, _, _ in sections]
         if numbers != sorted(set(numbers)) or any(n not in SECTIONS for n in numbers):
-            violations.append("Sections must be numbered 0 to 4, in order, each once; found %s." % numbers)
+            violations.append("Sections must be numbered 0 to 5, in order, each once; found %s." % numbers)
         if packed:
             violations.append("Put one blank line before each section; without it the line merges into the one above.")
         for number, label, line, subs in sections:

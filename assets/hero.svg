@@ -39,7 +39,7 @@
 <text x="22" y="258" class="m" xml:space="preserve"><tspan fill="#9CA3AF">- </tspan><tspan fill="#E5E7EB" font-weight="700">Q1.</tspan><tspan fill="#86EFAC"> Approve: deploy to production?</tspan></text>
 <text x="22" y="284" class="m" xml:space="preserve"><tspan fill="#9CA3AF">  - </tspan><tspan fill="#7DD3FC">&lt;a&gt;</tspan><tspan fill="#E5E7EB"> After the payment check.</tspan></text>
 <text x="22" y="310" class="m" xml:space="preserve"><tspan fill="#9CA3AF">  - </tspan><tspan fill="#6B7280">(b) Now.</tspan></text>
-<text x="22" y="348" class="m" xml:space="preserve"><tspan fill="#A5B4FC" font-weight="700">4.Backlog:</tspan><tspan fill="#E5E7EB"> check </tspan><tspan fill="#7DD3FC">payment.spec.ts:88</tspan><tspan fill="#E5E7EB">.</tspan></text>
+<text x="22" y="348" class="m" xml:space="preserve"><tspan fill="#A5B4FC" font-weight="700">3.Todos:</tspan><tspan fill="#E5E7EB"> check </tspan><tspan fill="#7DD3FC">payment.spec.ts:88</tspan><tspan fill="#E5E7EB">.</tspan></text>
 </g>
 <text x="600" y="488" text-anchor="middle" class="t" fill="#4B5563">Illustration: a hand-written sample of the reply shape, not model output.</text>
 </svg>

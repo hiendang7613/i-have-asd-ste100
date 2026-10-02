@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0 — 2026-10-02
+- Six sections, as chosen by the first user: 0.Done, 1.InProgress, 2.Questions, 3.Todos, 4.Pending, 5.Backlog.
+- 3.Todos holds the work of the current task the agent does next, in order; 5.Backlog now holds only work deferred to later or optional. 4 is always Pending.
+
 ## 0.4.1 — 2026-10-02
 - Sections start their own line with the number first (`**0.Done:**`), not as list items, with one blank line between sections. Without the blank line, Markdown merges a section into the list above it (checked with the GitHub Markdown API); the checker now reports that case.
 

@@ -20,11 +20,11 @@ FULL = """- **Fix:** `verifyToken` now reads the `Authorization` header.
     - `<a>` After CI passes.
     - (b) Now.
 
-**3.Pending:** Review from the other agent.
+**3.Todos:** Check `payment.spec.ts:88`.
 
-**4.Backlog:**
-  - Check `payment.spec.ts:88`.
-  - Update `jsonwebtoken`.
+**4.Pending:** Review from the other agent.
+
+**5.Backlog:** Update `jsonwebtoken` in a separate change.
 """
 
 
@@ -32,7 +32,7 @@ class ShapeTests(unittest.TestCase):
     def test_full_shape_passes(self):
         report = check(FULL)
         self.assertTrue(report["ok"], report)
-        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4])
+        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
 
     def test_shipped_examples_pass_and_the_old_style_fails(self):
         for name in ("after-en.md", "after-vi.md", "after-zh.md", "after-ja.md", "after-es.md", "compare/3-i-have-asd-ste100.md"):
@@ -48,16 +48,16 @@ class ShapeTests(unittest.TestCase):
         self.assertTrue(check('```json\n{"status": "ok", "count": 3}\n```')["ok"])
 
     def test_sections_out_of_order_repeated_or_out_of_range_fail(self):
-        swapped = FULL.replace("**3.Pending:** Review from the other agent.\n\n", "").replace(
-            "**1.InProgress:** CI reruns the full suite.\n", "**3.Pending:** Review from the other agent.\n")
+        swapped = FULL.replace("**4.Pending:** Review from the other agent.\n\n", "").replace(
+            "**1.InProgress:** CI reruns the full suite.\n", "**4.Pending:** Review from the other agent.\n")
         self.assertNotEqual(swapped, FULL)
         self.assertFalse(check(swapped)["ok"])
-        self.assertFalse(check(FULL.replace("**4.Backlog:**", "**5.Backlog:**"))["ok"])
+        self.assertFalse(check(FULL.replace("**5.Backlog:**", "**6.Backlog:**"))["ok"])
         self.assertFalse(check(FULL.replace("**1.InProgress:**", "**0.InProgress:**"))["ok"])
 
     def test_empty_sections_must_be_left_out(self):
-        report = check(FULL.replace("**3.Pending:** Review from the other agent.", "**3.Pending:**"))
-        self.assertTrue(any("Section 3" in v and "empty" in v for v in report["violations"]))
+        report = check(FULL.replace("**4.Pending:** Review from the other agent.", "**4.Pending:**"))
+        self.assertTrue(any("Section 4" in v and "empty" in v for v in report["violations"]))
 
     def test_each_question_with_options_marks_exactly_one_recommended(self):
         none = FULL.replace("`<a>` After CI passes.", "(a) After CI passes.")
@@ -68,11 +68,11 @@ class ShapeTests(unittest.TestCase):
                 self.assertTrue(any("options marked" in v for v in check(text)["violations"]))
 
     def test_sections_need_a_blank_line_before_them_unless_bulleted(self):
-        packed = FULL.replace("    - (b) Now.\n\n**3.Pending:**", "    - (b) Now.\n**3.Pending:**")
+        packed = FULL.replace("    - (b) Now.\n\n**3.Todos:**", "    - (b) Now.\n**3.Todos:**")
         self.assertNotEqual(packed, FULL)
         self.assertTrue(any("blank line before each section" in v for v in check(packed)["violations"]))
         bulleted = FULL
-        for n in range(5):
+        for n in range(6):
             bulleted = bulleted.replace("\n\n**%d." % n, "\n- **%d." % n)
         self.assertNotEqual(bulleted, FULL)
         self.assertTrue(check(bulleted)["ok"], check(bulleted))
@@ -130,7 +130,7 @@ class MultilingualTests(unittest.TestCase):
 
     def test_fullwidth_colon_labels_and_section_numbers(self):
         report = check((ROOT / "examples/after-zh.md").read_text())
-        self.assertEqual(report["stats"]["sections"], [0, 2, 4])
+        self.assertEqual(report["stats"]["sections"], [0, 2, 3, 5])
 
 
 if __name__ == "__main__":

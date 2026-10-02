@@ -10,6 +10,6 @@
     - `<a>` Có, kiểm tra ngay.
     - (b) Sau khi gộp.
 
-**4.Tồn đọng:**
-  - `payment.spec.ts:88` lỗi; tôi không sửa mã thanh toán.
-  - `jsonwebtoken` 8.5.1 đã cũ; cập nhật sau khi kiểm tra test thanh toán.
+**3.Việc cần làm:** Tìm nguyên nhân `payment.spec.ts:88` lỗi; tôi không sửa mã thanh toán.
+
+**5.Tồn đọng:** `jsonwebtoken` 8.5.1 đã cũ; cập nhật trong một thay đổi riêng.
