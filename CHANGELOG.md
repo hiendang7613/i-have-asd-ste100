@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — 2026-10-02
+- Format layer for fast reading: the five block lines carry fixed icons (🎯 🔑 👉 ❓ 📌) that mean the same in every language; status icons ✅ ❌ ⏳ always come with words; every bullet starts with its key; code spans only for exact strings; a bold budget; tables only for comparisons; no headings in normal replies.
+- The block lines are list items, so Markdown renderers never merge them into one paragraph.
+- All icons are single wide code points without variation selectors, so terminal columns stay aligned; a test enforces it.
+- "no icons" removes the icons for a session.
+- The checker reads a line's role from its icon in any language, so the order is checked even for unknown labels.
+- README redesign: SVG before and after hero, format table, comparison table with measured word and sentence counts, FAQ; new social preview.
+
 ## 0.2.0 — 2026-10-02
 - Language-neutral rules: the labels are written in the user's language; the injected rules name no language and use only ASCII, because a named language pulls replies toward it.
 - Sentence length for scripts without spaces is measured in characters; the checker finds the block by structure, knows label sets in ten languages, and splits sentences on CJK punctuation.

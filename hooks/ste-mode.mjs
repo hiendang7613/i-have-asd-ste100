@@ -19,11 +19,16 @@ const OFF_EXACT = new Set(["stop ste mode", "normal mode"]);
 const ON_EXACT = new Set(["ste mode", "start ste mode", "ste mode on"]);
 const OFF_ANYWHERE = /\bstop ste mode\b/;
 const ON_ANYWHERE = /\b(?:start ste mode|ste mode on)\b/;
+const NO_ICONS = /\bno icons\b/;
+const ICONS_ON = /\b(?:icons on|with icons)\b/;
 export const REMINDER =
-  "[i-have-asd-ste100] Reply shape: a short body in one-idea sentences, then the conclusion block last " +
-  "(Conclusion / Approve / Your action / Question / Open, in the user's language; only the first line when nothing else is open). " +
-  "Only for text a person reads. " +
-  'Keep exact strings, numbers, negations and evidence levels. "stop ste mode" turns this off.';
+  "[i-have-asd-ste100] Reply shape: short body, each line starting with its key; then the block last: " +
+  "🎯 Conclusion, 🔑 Approve, 👉 Your action, ❓ Question, 📌 Open (labels in the user's language; only 🎯 if nothing else is open). " +
+  'Only for text a person reads. Keep exact strings, numbers and negations. "stop ste mode" turns this off.';
+export const PLAIN_REMINDER =
+  "[i-have-asd-ste100] Reply shape: short body, each line starting with its key; then the block last: " +
+  "Conclusion, Approve, Your action, Question, Open (labels in the user's language, no icons; only Conclusion if nothing else is open). " +
+  'Only for text a person reads. Keep exact strings, numbers and negations. "stop ste mode" turns this off.';
 
 const ENV_SWITCHES = ["I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"];
 
@@ -97,11 +102,16 @@ function run() {
       fs.writeFileSync(marker, "off\n");
       return "[i-have-asd-ste100] STE reply mode is off for this session. Confirm in one line, then use your default style.\n";
     }
-    if (ON_EXACT.has(prompt) || ON_ANYWHERE.test(free)) {
-      fs.rmSync(marker, { force: true });
-      return `${REMINDER}\n`;
+    if (ON_EXACT.has(prompt) || ON_ANYWHERE.test(free)) fs.rmSync(marker, { force: true });
+    if (fs.existsSync(marker)) return "";
+    const plain = marker.replace(/\.off$/, ".noicons");
+    if (NO_ICONS.test(free)) {
+      fs.mkdirSync(path.dirname(plain), { recursive: true });
+      fs.writeFileSync(plain, "no icons\n");
+    } else if (ICONS_ON.test(free)) {
+      fs.rmSync(plain, { force: true });
     }
-    return fs.existsSync(marker) ? "" : `${REMINDER}\n`;
+    return `${fs.existsSync(plain) ? PLAIN_REMINDER : REMINDER}\n`;
   }
   return "";
 }

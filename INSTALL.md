@@ -21,8 +21,9 @@ touch ~/.claude/.i-have-asd-ste100-off          # every session (Codex: $CODEX_H
 I_HAVE_ASD_STE100=off claude                     # this process only
 ```
 
-Delete the file or unset the variable to turn it on again. Inside a session, the exact prompt "stop ste mode"
-(or "normal mode") stops it for that session, and "ste mode" starts it again.
+Delete the file or unset the variable to turn it on again. Inside a session, "stop ste mode" anywhere in a prompt
+(outside quotes and code), or the exact prompt "normal mode", stops it for that session; "ste mode" starts it again.
+"no icons" keeps the shape but drops the icons, for terminals that cannot show them.
 
 The hooks need Node.js on the PATH. Without Node they do nothing; the manual command still works.
 

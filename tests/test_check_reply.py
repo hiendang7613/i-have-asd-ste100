@@ -96,9 +96,15 @@ class MultilingualTests(unittest.TestCase):
         self.assertFalse(check(three)["ok"])
 
     def test_known_labels_in_wrong_order_fail_in_any_language(self):
-        text = (ROOT / "examples/after-es.md").read_text().replace("Aprobar: Ninguno.\nTu acción: Ninguna.",
-                                                                     "Tu acción: Ninguna.\nAprobar: Ninguno.")
-        self.assertFalse(check(text)["ok"])
+        original = (ROOT / "examples/after-es.md").read_text()
+        approve = next(line for line in original.splitlines() if "**Aprobar:**" in line)
+        action = next(line for line in original.splitlines() if "**Tu acción:**" in line)
+        swapped = original.replace(approve + "\n" + action, action + "\n" + approve)
+        self.assertNotEqual(swapped, original)
+        self.assertFalse(check(swapped)["ok"])
+        unlabelled = swapped.replace("🔑 ", "").replace("👉 ", "")
+        self.assertNotEqual(unlabelled, swapped)
+        self.assertFalse(check(unlabelled)["ok"])  # known Spanish labels still fix the order without icons
 
     def test_length_counts_characters_in_scripts_without_spaces(self):
         long_ja = "- " + "これはとても長い説明の文で" * 6 + "す。\n\n結論：完了しました。\n"
@@ -106,6 +112,31 @@ class MultilingualTests(unittest.TestCase):
         self.assertTrue(any(w.startswith("Long sentence") for w in report["warnings"]), report)
         short_zh = "- 测试全部通过。\n\n结论：完成。\n"
         self.assertEqual(check(short_zh)["warnings"], [])
+
+
+class IconTests(unittest.TestCase):
+    BLOCK = ("- ✅ **Tests:** 214 ran, 213 pass.\n- ❌ `payment.spec.ts:88` fails; cause not checked.\n\n"
+             "🎯 **{0}:** Login is fixed; one payment test still fails.\n🔑 **{1}:** Deploy to production.\n"
+             "👉 **{2}:** None.\n❓ **{3}:** Check the payment test first (recommended)?\n📌 **{4}:** Update jsonwebtoken later.\n")
+
+    def test_icons_fix_the_roles_in_any_language(self):
+        for labels in (("Conclusion", "Approve", "Your action", "Question", "Open"),
+                       ("Hitimisho", "Idhinisha", "Kazi yako", "Swali", "Yaliyobaki")):
+            with self.subTest(labels=labels[0]):
+                report = check(self.BLOCK.format(*labels))
+                self.assertTrue(report["ok"], report)
+                self.assertEqual(report["stats"]["block_lines"], ["conclusion", "approve", "action", "question", "open"])
+                self.assertEqual(report["warnings"], [])
+
+    def test_icon_order_is_checked_even_for_unknown_labels(self):
+        text = self.BLOCK.format("Hitimisho", "Idhinisha", "Kazi yako", "Swali", "Yaliyobaki")
+        swapped = text.replace("🔑 **Idhinisha:** Deploy to production.\n👉 **Kazi yako:** None.",
+                               "👉 **Kazi yako:** None.\n🔑 **Idhinisha:** Deploy to production.")
+        self.assertFalse(check(swapped)["ok"])
+
+    def test_status_icon_bullets_are_body_lines_not_block_lines(self):
+        report = check(self.BLOCK.format("Conclusion", "Approve", "Your action", "Question", "Open"))
+        self.assertEqual(len(report["stats"]["block_lines"]), 5)
 
 
 if __name__ == "__main__":

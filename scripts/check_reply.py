@@ -26,6 +26,7 @@ LABELS = [  # known label sets, used only to check the order; unknown labels sti
     ("question", ["Question", "Câu hỏi", "问题", "質問", "질문", "Pregunta", "Frage", "Pergunta", "Вопрос"]),
     ("open", ["Open", "Việc còn mở", "Việc mở", "待办", "未完了", "남은 일", "Pendiente", "En cours", "Offen", "Pendente", "Открыто"]),
 ]
+ICONS = {"🎯": "conclusion", "🔑": "approve", "👉": "action", "❓": "question", "📌": "open"}
 NO_SPACE_SCRIPTS = [  # (regex, characters per English-word equivalent); see docs/RESEARCH.md
     # About 1.5 Chinese characters carry one English word (translation ratio, Google Research 2007).
     (re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]"), 1.5),   # Japanese kana, Chinese and Japanese kanji
@@ -44,10 +45,18 @@ OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of co
 CLOSERS = re.compile(r"(hope this helps|let me know if|feel free to|happy to help|hy vọng (điều này|giúp)|"
                      r"cứ hỏi nếu|đừng ngần ngại)", re.I)
 LINE_PREFIX = re.compile(r"^\s*(?:[-*•]\s*|\d+[.)]\s*)?(?:\*\*)?")
+ICON_PREFIX = re.compile(r"^\s*(?:[-*•]\s*)?(" + "|".join(ICONS) + r")\s*")
 
 
 def label_of(line):
-    """Return (key, text) for a block line. key is a known role, or "?" for a label in an unknown language."""
+    """Return (key, text) for a block line. key is a known role, or "?" for a label in an unknown language.
+    A leading block icon fixes the role in any language."""
+    icon = ICON_PREFIX.match(line)
+    if icon:
+        rest = line[icon.end():]
+        match = re.match(r"(?:\*\*)?[^:：*\n]{1,30}?(?:\*\*)?\s*[:：]\s*(?:\*\*)?\s*(\S.*)$", rest)
+        if match:
+            return ICONS[icon.group(1)], match.group(1).strip()
     stripped = LINE_PREFIX.sub("", line, count=1)
     for key, names in LABELS:
         for name in names:

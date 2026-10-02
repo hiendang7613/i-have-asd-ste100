@@ -50,9 +50,9 @@ class SkillTests(unittest.TestCase):
         for heading in ("## Persistence", "## The shape", "## Sentences", "## Protect meaning", "## Tone",
                         "## When to break the rules", "## Pre-send check"):
             self.assertIn(heading, self.text)
-        for label in ("**Conclusion:**", "**Approve:**", "**Your action:**", "**Question:**", "**Open:**"):
+        for label in ("🎯 **Conclusion:**", "🔑 **Approve:**", "👉 **Your action:**", "❓ **Question:**", "📌 **Open:**"):
             self.assertIn(label, self.text)
-        self.assertIn("Write the labels in the user's language", self.text)
+        self.assertIn("Write each label in the user's language", self.text)
         self.assertIn('"stop ste mode"', self.text)
 
     def test_injected_rules_name_no_human_language_and_use_only_ascii(self):
@@ -60,7 +60,16 @@ class SkillTests(unittest.TestCase):
         body = self.text.split("---", 2)[2]
         names = r"\b(English|Vietnamese|Chinese|Japanese|Korean|Spanish|French|German|Portuguese|Arabic|Russian|Thai|Hindi)\b"
         self.assertNotRegex(body, names)
-        self.assertTrue(body.isascii(), [c for c in body if not c.isascii()][:10])
+        icons = set("🎯🔑👉❓📌✅❌⏳")
+        self.assertEqual({c for c in body if not c.isascii()} - icons, set())
+
+    def test_icons_are_single_wide_code_points_that_do_not_break_terminal_alignment(self):
+        import unicodedata
+        for icon in "🎯🔑👉❓📌✅❌⏳":
+            with self.subTest(icon=icon):
+                self.assertEqual(unicodedata.east_asian_width(icon), "W")
+                self.assertIn(icon, self.text)
+        self.assertNotIn("\ufe0f", self.text)  # no variation selectors, whose width differs between terminals
 
     def test_public_skill_does_not_hard_code_one_users_form_of_address(self):
         self.assertNotRegex(self.text, r"\bAnh cần làm\b|\banh\b")
