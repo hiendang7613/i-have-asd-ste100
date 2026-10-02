@@ -20,8 +20,8 @@ const ON_EXACT = new Set(["ste mode", "start ste mode", "ste mode on"]);
 const OFF_ANYWHERE = /\bstop ste mode\b/;
 const ON_ANYWHERE = /\b(?:start ste mode|ste mode on)\b/;
 export const REMINDER =
-  "[i-have-asd-ste100] Reply shape: key-first bullets; then **Conclusion:** in one sentence and the sections " +
-  "0.Done, 1.InProgress, 2.Questions, 3.Todos, 4.Pending, 5.Backlog, each after a blank line (1 and 3 always, None if empty; skip other empty ones). " +
+  "[i-have-asd-ste100] Reply shape: key-first bullets; then **Conclusion:** in one sentence, a blank line, and all six " +
+  "sections as a list from 0, no blank lines between: 0. Done, 1. InProgress, 2. Questions, 3. Todos, 4. Pending, 5. Backlog (None if empty). " +
   'Recommended option as `<a>`. No emoji or square brackets. Only for text a person reads. "stop ste mode" turns this off.';
 
 const ENV_SWITCHES = ["I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"];

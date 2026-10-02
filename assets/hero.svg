@@ -34,13 +34,15 @@
 <text x="22" y="92" class="m" xml:space="preserve"><tspan fill="#9CA3AF">- </tspan><tspan fill="#E5E7EB" font-weight="700">Fix:</tspan><tspan fill="#E5E7EB"> it now reads </tspan><tspan fill="#7DD3FC">Authorization</tspan><tspan fill="#E5E7EB">.</tspan></text>
 <text x="22" y="130" class="m" xml:space="preserve"><tspan fill="#A5B4FC" font-weight="700">Conclusion:</tspan><tspan fill="#E5E7EB"> Login fixed; 1 payment test fails,</tspan></text>
 <text x="22" y="156" class="m" xml:space="preserve"><tspan fill="#E5E7EB">cause not checked.</tspan></text>
-<text x="22" y="194" class="m" xml:space="preserve"><tspan fill="#A5B4FC" font-weight="700">0.Done:</tspan><tspan fill="#E5E7EB"> fix merged; 213 of 214 tests pass.</tspan></text>
-<text x="22" y="232" class="m" xml:space="preserve"><tspan fill="#A5B4FC" font-weight="700">1.InProgress:</tspan><tspan fill="#6B7280"> None.</tspan></text>
-<text x="22" y="270" class="m" xml:space="preserve"><tspan fill="#A5B4FC" font-weight="700">2.Questions:</tspan></text>
-<text x="22" y="296" class="m" xml:space="preserve"><tspan fill="#9CA3AF">- </tspan><tspan fill="#E5E7EB" font-weight="700">Q1.</tspan><tspan fill="#86EFAC"> Approve: deploy to production?</tspan></text>
-<text x="22" y="322" class="m" xml:space="preserve"><tspan fill="#9CA3AF">  - </tspan><tspan fill="#7DD3FC">&lt;a&gt;</tspan><tspan fill="#E5E7EB"> After the payment check.</tspan></text>
-<text x="22" y="348" class="m" xml:space="preserve"><tspan fill="#9CA3AF">  - </tspan><tspan fill="#6B7280">(b) Now.</tspan></text>
-<text x="22" y="386" class="m" xml:space="preserve"><tspan fill="#A5B4FC" font-weight="700">3.Todos:</tspan><tspan fill="#E5E7EB"> check </tspan><tspan fill="#7DD3FC">payment.spec.ts:88</tspan><tspan fill="#E5E7EB">.</tspan></text>
+<text x="22" y="194" class="m" xml:space="preserve"><tspan fill="#9CA3AF">0. </tspan><tspan fill="#A5B4FC" font-weight="700">Done:</tspan><tspan fill="#E5E7EB"> fix merged; 213 of 214 tests pass.</tspan></text>
+<text x="22" y="220" class="m" xml:space="preserve"><tspan fill="#9CA3AF">1. </tspan><tspan fill="#A5B4FC" font-weight="700">InProgress:</tspan><tspan fill="#6B7280"> None.</tspan></text>
+<text x="22" y="246" class="m" xml:space="preserve"><tspan fill="#9CA3AF">2. </tspan><tspan fill="#A5B4FC" font-weight="700">Questions:</tspan></text>
+<text x="22" y="272" class="m" xml:space="preserve"><tspan fill="#9CA3AF">   - </tspan><tspan fill="#E5E7EB" font-weight="700">Q1.</tspan><tspan fill="#86EFAC"> Approve: deploy to production?</tspan></text>
+<text x="22" y="298" class="m" xml:space="preserve"><tspan fill="#9CA3AF">     - </tspan><tspan fill="#7DD3FC">&lt;a&gt;</tspan><tspan fill="#E5E7EB"> After the payment check.</tspan></text>
+<text x="22" y="324" class="m" xml:space="preserve"><tspan fill="#9CA3AF">     - </tspan><tspan fill="#6B7280">(b) Now.</tspan></text>
+<text x="22" y="350" class="m" xml:space="preserve"><tspan fill="#9CA3AF">3. </tspan><tspan fill="#A5B4FC" font-weight="700">Todos:</tspan><tspan fill="#E5E7EB"> check </tspan><tspan fill="#7DD3FC">payment.spec.ts:88</tspan><tspan fill="#E5E7EB">.</tspan></text>
+<text x="22" y="376" class="m" xml:space="preserve"><tspan fill="#9CA3AF">4. </tspan><tspan fill="#A5B4FC" font-weight="700">Pending:</tspan><tspan fill="#6B7280"> None.</tspan></text>
+<text x="22" y="402" class="m" xml:space="preserve"><tspan fill="#9CA3AF">5. </tspan><tspan fill="#A5B4FC" font-weight="700">Backlog:</tspan><tspan fill="#E5E7EB"> update jsonwebtoken later.</tspan></text>
 </g>
 <text x="600" y="528" text-anchor="middle" class="t" fill="#4B5563">Illustration: a hand-written sample of the reply shape, not model output.</text>
 </svg>

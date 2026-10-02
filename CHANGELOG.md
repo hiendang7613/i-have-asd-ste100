@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0 — 2026-10-02
+- All six sections are always shown (None when empty), written as one numbered list from 0 to 5 with no blank lines between sections, as the first user asked.
+- One blank line separates the list from the Conclusion line: a list that starts at 0 cannot interrupt a paragraph, so without it item 0 merges into the Conclusion (checked with the GitHub Markdown API).
+- The checker requires all six sections, the blank line after the Conclusion and no blank lines inside the list.
+
 ## 0.5.1 — 2026-10-02
 - 1.InProgress and 3.Todos are always shown, with None when empty, so a reader always sees whether anything runs or comes next (requested by the first user). Other empty sections are still left out; the checker enforces both rules.
 

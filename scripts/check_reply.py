@@ -10,8 +10,8 @@ The check covers what can be counted: the conclusion part, section numbers and o
 emoji and square brackets, sentence length, openers and closers.
 It cannot judge meaning, accuracy or tone; a passing reply can still be wrong.
 
-Any language: the conclusion part is found by its structure (a bold "label:" line followed by list items
-whose bold labels start with a section number 0 to 5), so labels in any language work.
+Any language: the conclusion part is found by its structure (a bold "label:" line, a blank line, then a
+numbered list 0 to 5 whose items start with a bold label), so labels in any language work.
 Length is counted in words for scripts with spaces and in characters (converted to word equivalents)
 for scripts written without spaces.
 """
@@ -21,7 +21,7 @@ import re
 import sys
 
 SECTIONS = {0: "Done", 1: "InProgress", 2: "Questions", 3: "Todos", 4: "Pending", 5: "Backlog"}
-ALWAYS_SHOWN = (1, 3)  # InProgress and Todos: an empty one says None
+ALWAYS_SHOWN = (0, 1, 2, 3, 4, 5)  # every section is shown; an empty one says None
 MAX_CONCLUSION_WORDS = 25
 MAX_SENTENCE_WORDS = 25
 BODY_WORD_BUDGET = 250
@@ -35,7 +35,7 @@ NO_SPACE_SCRIPTS = [  # (regex, characters per English-word equivalent); see doc
 EMOJI = re.compile(r"[☀-➿⬀-⯿⌀-⏿\U0001F000-\U0001FAFF️]")
 SENTENCE_END = r"(?<=[.!?。！？؟।])\s*"
 CONCLUSION_LINE = re.compile(r"^\*\*([^*:：\n]{1,30})[:：]\*\*\s*(\S.*)$")
-SECTION_LINE = re.compile(r"^(?:[-*]\s+)?\*\*(\d)\.\s?([^*:：\n]{1,30})[:：]\*\*\s*(.*)$")
+SECTION_LINE = re.compile(r"^(\d)\.\s+\*\*([^*:：\n]{1,30})[:：]\*\*\s*(.*)$")
 SUB_ITEM = re.compile(r"^\s{2,}[-*]\s+(.*)$")
 RECOMMENDED = "`<a>`"
 OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of course|let me |i'll |i will now|"
@@ -70,31 +70,35 @@ def sentences(text):
 
 
 def split_reply(text):
-    """Return (body, conclusion_text_or_None, sections) where sections is a list of
-    (number, label, text, sub_items). The conclusion part is the last bold-label line
-    plus the numbered list items after it."""
+    """Return (body, conclusion_text_or_None, sections, layout_problems). sections is a list of
+    (number, label, text, sub_items). The conclusion part is the last bold-label line, one blank line,
+    then a numbered list whose items start with a bold label."""
     lines = text.rstrip().splitlines()
     index = len(lines) - 1
     tail = []
-    while index >= 0 and (not lines[index].strip() or SECTION_LINE.match(lines[index].strip())
+    while index >= 0 and (not lines[index].strip() or SECTION_LINE.match(lines[index])
                           or SUB_ITEM.match(lines[index])):
         tail.insert(0, lines[index])
         index -= 1
     conclusion = CONCLUSION_LINE.match(lines[index].strip()) if index >= 0 else None
-    has_sections = any(SECTION_LINE.match(line.strip()) for line in tail)
+    has_sections = any(SECTION_LINE.match(line) for line in tail)
     if not conclusion or (any(line.strip() for line in tail) and not has_sections):
-        return text, None, [], False
-    sections, packed, previous = [], False, lines[index]
+        return text, None, [], []
+    problems = []
+    if not tail or tail[0].strip():
+        problems.append("Put one blank line between the Conclusion line and the list, or the list merges into it.")
+    items = [line for line in tail[1:]]
+    first = next((i for i, line in enumerate(items) if line.strip()), None)
+    if first is not None and any(not line.strip() for line in items[first:]):
+        problems.append("Write the sections without blank lines between them.")
+    sections = []
     for line in tail:
-        match = SECTION_LINE.match(line.strip())
-        if match and not re.match(r"[-*]\s", line.lstrip()) and previous.strip():
-            packed = True  # a bullet-free section line right after another line merges into it when rendered
-        previous = line
+        match = SECTION_LINE.match(line)
         if match:
             sections.append((int(match.group(1)), match.group(2).strip(), match.group(3).strip(), []))
         elif SUB_ITEM.match(line) and sections:
             sections[-1][3].append(line)
-    return "\n".join(lines[:index]), conclusion.group(2).strip(), sections, packed
+    return "\n".join(lines[:index]), conclusion.group(2).strip(), sections, problems
 
 
 def question_problems(sub_items):
@@ -117,7 +121,7 @@ def question_problems(sub_items):
 
 
 def check(text):
-    body, conclusion, sections, packed = split_reply(text)
+    body, conclusion, sections, layout = split_reply(text)
     words = units(strip_code(text))
     violations, warnings = [], []
 
@@ -130,14 +134,13 @@ def check(text):
         numbers = [number for number, _, _, _ in sections]
         missing = [n for n in ALWAYS_SHOWN if n not in numbers]
         if missing:
-            violations.append("Sections %s must always be shown; write None when empty." % ", ".join(str(n) for n in missing))
+            violations.append("Sections %s must be shown; write None when one is empty." % ", ".join(str(n) for n in missing))
         if numbers != sorted(set(numbers)) or any(n not in SECTIONS for n in numbers):
             violations.append("Sections must be numbered 0 to 5, in order, each once; found %s." % numbers)
-        if packed:
-            violations.append("Put one blank line before each section; without it the line merges into the one above.")
+        violations.extend(layout)
         for number, label, line, subs in sections:
             if not line and not subs:
-                violations.append("Section %d (%s) is empty; %s." % (number, label, "write None" if number in ALWAYS_SHOWN else "leave it out"))
+                violations.append("Section %d (%s) is empty; write None." % (number, label))
             if number == 2:
                 violations.extend(question_problems(subs))
 
@@ -146,7 +149,7 @@ def check(text):
         violations.append("The reply contains emoji; write status in words.")
     if re.search(r"\*\*\[|^[-*]\s+\[[^\]]+\]", outside_code, re.M):
         violations.append("Labels use square brackets; write bold labels without them.")
-    if re.search(r"```[^\n]*\n(?:(?!```).)*\*\*\d\.[^*]+:\*\*", text, re.S):
+    if re.search(r"```[^\n]*\n(?:(?!```).)*\n\d\.\s+\*\*[^*]+:\*\*", text, re.S):
         violations.append("The conclusion part is inside a code block; the reader would see raw markers.")
 
     body_sentences = sentences(body)

@@ -1,6 +1,6 @@
 ---
 name: i-have-asd-ste100
-description: 'Make every reply short, plain and fast to scan in any language: key-first bullets, then a one-sentence Conclusion and fixed numbered sections (0.Done, 1.InProgress, 2.Questions, 3.Todos, 4.Pending, 5.Backlog). Rules adapted from ASD-STE100 and plain-language principles. On by default after install; invoke by hand with /i-have-asd-ste100:i-have-asd-ste100; "stop ste mode" turns it off for a session.'
+description: 'Make every reply short, plain and fast to scan in any language: key-first bullets, then a one-sentence Conclusion and a fixed list of six sections (0 Done, 1 InProgress, 2 Questions, 3 Todos, 4 Pending, 5 Backlog). Rules adapted from ASD-STE100 and plain-language principles. On by default after install; invoke by hand with /i-have-asd-ste100:i-have-asd-ste100; "stop ste mode" turns it off for a session.'
 disable-model-invocation: true
 license: MIT
 metadata:
@@ -19,15 +19,18 @@ These rules apply to every reply for the rest of the session, in every language.
 ## The shape
 
 1. **Body first.** Give only what the reader needs to trust the conclusion: facts, evidence, steps. Use at most five bullets or short paragraphs, about 250 words or the same reading time. Put longer detail in a file and give its path.
-2. **Conclusion part last.** After one blank line, write `**Conclusion:**` and the result in one sentence. Bad news first: failure, skip, blocker, unverified work. Then these sections, each starting its own line with its bold label, one blank line between sections, always in this order:
-   - `**0.Done:**` work finished and checked, with its evidence.
-   - `**1.InProgress:**` work running now, and who runs it.
-   - `**2.Questions:**` everything that needs the user, one sub-item per question: `**Q1.**`, `**Q2.**`. Start an approval with "Approve:". Give options as sub-items: the recommended one as `<a>` in a code span, the others as (b), (c).
-   - `**3.Todos:**` work in the current task you will do next, in order.
-   - `**4.Pending:**` work waiting for someone or something else, and on what.
-   - `**5.Backlog:**` work deferred to later or optional, outside the current task.
+2. **Conclusion part last.** After one blank line, write `**Conclusion:**` and the result in one sentence. Bad news first: failure, skip, blocker, unverified work. After one more blank line, write all six sections as one numbered list that starts at 0, with no blank lines between items:
 
-   Always show 1 and 3; when empty, write "None" in the user's language. Leave out other empty sections; never renumber. Write the label words in the user's language, identical in the session. Put more than one item as indented sub-items.
+   ```
+   0. **Done:** work finished and checked, with its evidence.
+   1. **InProgress:** work running now, and who runs it.
+   2. **Questions:** everything that needs the user, one sub-item per question.
+   3. **Todos:** work in the current task you will do next, in order.
+   4. **Pending:** work waiting for someone or something else, and on what.
+   5. **Backlog:** work deferred to later or optional, outside the current task.
+   ```
+
+   Show all six; write "None" in the user's language when one is empty. Write the label words in the user's language, identical in the session. Indent sub-items by three spaces. In Questions, write `**Q1.**`, start an approval with "Approve:", and give options as deeper sub-items: the recommended one as `<a>` in a code span, the others as (b), (c).
 3. **The conclusion part stands alone.** Name the thing, never "see above". Do not repeat the body in it.
 4. **Small answers stay small.** A one-fact answer or a yes/no is one or two sentences, with no conclusion part.
 5. **Exact output wins.** When the user asks for only code, JSON, one command, a commit message or a file, give exactly that.
@@ -71,7 +74,7 @@ Be friendly and matter-of-fact. No opener, no closing pleasantry, no recap. Repo
 
 ## Pre-send check
 
-1. Does the final message end with the conclusion part, sections in order with 1 and 3 always present, a blank line between them?
+1. Does the final message end with the Conclusion line, a blank line, then all six sections from 0 to 5 with no blank lines between them?
 2. Read only the conclusion part. Is anything misleading? Is a failure hidden?
 3. Does every line start with its key? Does any sentence need a second breath?
 4. Is any option list missing its `<a>`, or is any emoji or square bracket left?
