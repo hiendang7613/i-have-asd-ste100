@@ -42,8 +42,18 @@ class ShapeTests(unittest.TestCase):
         self.assertFalse(before["ok"])
         self.assertTrue(any("No conclusion part" in v for v in before["violations"]))
 
-    def test_conclusion_line_alone_is_allowed_and_small_answers_need_nothing(self):
-        self.assertTrue(check("I renamed the file.\n\n**Conclusion:** The file is renamed.\n")["ok"])
+    def test_inprogress_and_todos_are_always_shown_with_none_when_empty(self):
+        alone = "I renamed the file.\n\n**Conclusion:** The file is renamed.\n"
+        self.assertTrue(any("must always be shown" in v for v in check(alone)["violations"]))
+        minimal = alone + "\n**1.InProgress:** None.\n\n**3.Todos:** None.\n"
+        self.assertTrue(check(minimal)["ok"], check(minimal))
+        no_todos = FULL.replace("**3.Todos:** Check `payment.spec.ts:88`.\n\n", "")
+        self.assertNotEqual(no_todos, FULL)
+        self.assertTrue(any("3 must always be shown" in v for v in check(no_todos)["violations"]))
+        empty = FULL.replace("**1.InProgress:** CI reruns the full suite.", "**1.InProgress:**")
+        self.assertTrue(any("Section 1" in v and "write None" in v for v in check(empty)["violations"]))
+
+    def test_small_answers_need_nothing(self):
         self.assertTrue(check("102.")["ok"])
         self.assertTrue(check('```json\n{"status": "ok", "count": 3}\n```')["ok"])
 
@@ -115,11 +125,11 @@ class StyleTests(unittest.TestCase):
 class MultilingualTests(unittest.TestCase):
     def test_labels_in_any_language_are_found_by_structure(self):
         swahili = ("- **Kurekebisha:** Kuingia kumerekebishwa.\n\n**Hitimisho:** Jaribio moja la malipo bado linashindwa.\n\n"
-                   "**0.Imekamilika:** Kuingia kumerekebishwa.\n\n**2.Maswali:**\n  - **Q1.** Niangalie sasa?\n"
-                   "    - `<a>` Ndiyo.\n    - (b) Baadaye.\n\n**4.Yaliyobaki:** Kusasisha jsonwebtoken.\n")
+                   "**0.Imekamilika:** Kuingia kumerekebishwa.\n\n**1.Inaendelea:** Hakuna.\n\n**2.Maswali:**\n  - **Q1.** Niangalie sasa?\n"
+                   "    - `<a>` Ndiyo.\n    - (b) Baadaye.\n\n**3.Kazi zijazo:** Hakuna.\n\n**5.Yaliyobaki:** Kusasisha jsonwebtoken.\n")
         report = check(swahili)
         self.assertTrue(report["ok"], report)
-        self.assertEqual(report["stats"]["sections"], [0, 2, 4])
+        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 5])
 
     def test_length_counts_characters_in_scripts_without_spaces(self):
         long_ja = "- **説明：** " + "これはとても長い説明の文で" * 6 + "す。\n\n**結論：** 完了しました。\n"
@@ -130,7 +140,7 @@ class MultilingualTests(unittest.TestCase):
 
     def test_fullwidth_colon_labels_and_section_numbers(self):
         report = check((ROOT / "examples/after-zh.md").read_text())
-        self.assertEqual(report["stats"]["sections"], [0, 2, 3, 5])
+        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 5])
 
 
 if __name__ == "__main__":

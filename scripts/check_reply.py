@@ -21,6 +21,7 @@ import re
 import sys
 
 SECTIONS = {0: "Done", 1: "InProgress", 2: "Questions", 3: "Todos", 4: "Pending", 5: "Backlog"}
+ALWAYS_SHOWN = (1, 3)  # InProgress and Todos: an empty one says None
 MAX_CONCLUSION_WORDS = 25
 MAX_SENTENCE_WORDS = 25
 BODY_WORD_BUDGET = 250
@@ -127,13 +128,16 @@ def check(text):
         if units(conclusion) > MAX_CONCLUSION_WORDS:
             violations.append("The Conclusion line has %g words (limit %d)." % (units(conclusion), MAX_CONCLUSION_WORDS))
         numbers = [number for number, _, _, _ in sections]
+        missing = [n for n in ALWAYS_SHOWN if n not in numbers]
+        if missing:
+            violations.append("Sections %s must always be shown; write None when empty." % ", ".join(str(n) for n in missing))
         if numbers != sorted(set(numbers)) or any(n not in SECTIONS for n in numbers):
             violations.append("Sections must be numbered 0 to 5, in order, each once; found %s." % numbers)
         if packed:
             violations.append("Put one blank line before each section; without it the line merges into the one above.")
         for number, label, line, subs in sections:
             if not line and not subs:
-                violations.append("Section %d (%s) is empty; leave it out." % (number, label))
+                violations.append("Section %d (%s) is empty; %s." % (number, label, "write None" if number in ALWAYS_SHOWN else "leave it out"))
             if number == 2:
                 violations.extend(question_problems(subs))
 

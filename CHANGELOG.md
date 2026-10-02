@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.1 — 2026-10-02
+- 1.InProgress and 3.Todos are always shown, with None when empty, so a reader always sees whether anything runs or comes next (requested by the first user). Other empty sections are still left out; the checker enforces both rules.
+
 ## 0.5.0 — 2026-10-02
 - Six sections, as chosen by the first user: 0.Done, 1.InProgress, 2.Questions, 3.Todos, 4.Pending, 5.Backlog.
 - 3.Todos holds the work of the current task the agent does next, in order; 5.Backlog now holds only work deferred to later or optional. 4 is always Pending.

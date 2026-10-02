@@ -5,6 +5,8 @@
 
 **0.Done:** Login fix in `verifyToken`; `npm test` ran 214 tests and 213 pass.
 
+**1.InProgress:** None.
+
 **2.Questions:**
   - **Q1.** Check `payment.spec.ts:88` before this change is merged?
     - `<a>` Yes, check it now.

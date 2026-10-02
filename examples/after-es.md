@@ -5,6 +5,8 @@
 
 **0.Hecho:** Corrección en `verifyToken`; `npm test` ejecutó 214 pruebas y pasan 213.
 
+**1.En curso:** Ninguno.
+
 **2.Preguntas:**
   - **Q1.** ¿Reviso `payment.spec.ts:88` antes de fusionar este cambio?
     - `<a>` Sí, ahora.

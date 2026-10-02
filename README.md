@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4F46E5"></a>
-  <img alt="Version 0.5.0" src="https://img.shields.io/badge/version-0.5.0-4F46E5">
+  <img alt="Version 0.5.1" src="https://img.shields.io/badge/version-0.5.1-4F46E5">
   <img alt="Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-0F172A">
   <img alt="Any language" src="https://img.shields.io/badge/replies-any%20language-F59E0B">
 </p>
@@ -91,7 +91,7 @@ Every reply that has more than one fact ends like this:
 | **4.Pending** | Work waiting for someone or something else | A third party |
 | **5.Backlog** | Work deferred to later or optional, outside the current task | The agent, later |
 
-- **Each section starts its own line, after a blank line.** Empty sections disappear and numbers never move; 4 is always Pending, so you can say "answer 2, Q1".
+- **Each section starts its own line, after a blank line.** 1.InProgress and 3.Todos are always shown, with None when empty, so you always see whether anything runs or comes next. Other empty sections disappear. Numbers never move, so you can say "answer 2, Q1".
 - **The recommended option** is written as `<a>` in code; the other options are (b), (c). You answer with one letter.
 - **Small answers stay small:** one fact, one sentence. Code-only, JSON-only and one-command requests get exactly that.
 
@@ -153,6 +153,8 @@ The samples are illustrative: written by hand from each project's published rule
 > **Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
 >
 > **0.Done:** Login fix; `npm test` ran 214 tests and 213 pass; staging is deployed.
+>
+> **1.InProgress:** None.
 >
 > **2.Questions:**
 >   - **Q1.** Approve: deploy the login fix to production?

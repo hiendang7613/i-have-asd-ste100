@@ -5,6 +5,8 @@
 
 **0.Đã xong:** Sửa `verifyToken`; `npm test` chạy 214 test, 213 test đạt.
 
+**1.Đang làm:** Không có.
+
 **2.Câu hỏi:**
   - **Q1.** Kiểm tra `payment.spec.ts:88` trước khi gộp thay đổi này?
     - `<a>` Có, kiểm tra ngay.

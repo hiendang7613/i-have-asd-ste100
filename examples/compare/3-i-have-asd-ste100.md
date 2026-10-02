@@ -5,6 +5,8 @@
 
 **0.Done:** Login fix; `npm test` ran 214 tests and 213 pass; staging is deployed.
 
+**1.InProgress:** None.
+
 **2.Questions:**
   - **Q1.** Approve: deploy the login fix to production?
     - `<a>` Yes, after I check `payment.spec.ts:88`.
