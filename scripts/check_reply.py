@@ -6,7 +6,8 @@ Usage:
   cat reply.md | python3 scripts/check_reply.py -    # read standard input
 
 Exit code 0 when there is no violation, 1 otherwise. Warnings never fail the check.
-The check covers what can be checked mechanically: the conclusion part, ASCII structure, exact English labels,
+The check covers what can be checked mechanically: the three zone labels and step lines, the conclusion part,
+ASCII structure, exact English labels,
 section order and indentation, bold-key sub-items, option markers, duplicate conclusions, emoji and square brackets,
 sentence length, openers and closers.
 It cannot judge meaning, accuracy or tone; a passing reply can still be wrong.
@@ -47,6 +48,11 @@ BOLD_KEY = re.compile(r"^\*\*[^*:\n]{1,40}:\*\*(\s|$)")
 OPTION_ITEM = re.compile(r"^(?:`<a>`|\([a-z]\))(?:\s|$)")
 ID_CANDIDATE = re.compile(r"\*\*[QRI]\d+\.\*\*")
 RECOMMENDED = "`<a>`"
+ZONES = ("Agents-Zone", "Result-Zone", "Admin-Zone")
+ZONE_LINE = re.compile(r"^\*\*(%s)\*\*\s*$" % "|".join(ZONES))
+STEP_LINE = re.compile(r"^- (?:`(?:1[0-2]|[1-9]):[0-5][0-9] (?:AM|PM)` )?\S.* => \S")
+TIME_LIKE = re.compile(r"^- `[^`]*\d:\d\d[^`]*`")
+STEP_TIME = re.compile(r"^- `(?:1[0-2]|[1-9]):[0-5][0-9] (?:AM|PM)` ")
 OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of course|let me |i'll |i will now|"
                      r"câu hỏi hay|tuyệt|để tôi |chắc chắn rồi)", re.I)
 CLOSERS = re.compile(r"(hope this helps|let me know if|feel free to|happy to help|hy vọng (điều này|giúp)|"
@@ -184,6 +190,38 @@ def duplicate_items(sections):
     return warnings
 
 
+def mask_code(text):
+    """Blank out fenced code but keep its line count, so line numbers still match the reply."""
+    return re.sub(r"```.*?```", lambda match: "\n" * match.group().count("\n"), text, flags=re.S)
+
+
+def zone_problems(text):
+    """The full format has three labelled zones: Agents-Zone (one line per step: `4:43 PM` why => what),
+    Result-Zone (the key-first body) and Admin-Zone (the Conclusion and the eight sections)."""
+    lines = mask_code(text).splitlines()
+    zones = [(index, ZONE_LINE.match(line).group(1)) for index, line in enumerate(lines) if ZONE_LINE.match(line)]
+    if [name for _, name in zones] != list(ZONES):
+        return ["Write the three zone labels once each, in order, on their own lines: **Agents-Zone**, "
+                "**Result-Zone**, **Admin-Zone**."]
+    problems = []
+    for index, name in zones:
+        if index > 0 and lines[index - 1].strip():
+            problems.append("Put a blank line before **%s**, or it merges into the line above." % name)
+        following = lines[index + 1] if index + 1 < len(lines) else ""
+        if following.strip() and not re.match(r"\s*(?:[-*]|\d+\.)\s", following):
+            problems.append("After **%s**, start a list or leave a blank line; plain text would join the label." % name)
+    agents, result, admin = (index for index, _ in zones)
+    for line in (line for line in lines[agents + 1:result] if line.strip()):
+        if not STEP_LINE.match(line) or (TIME_LIKE.match(line) and not STEP_TIME.match(line)):
+            problems.append("Agents-Zone lines are '- `4:43 PM` why => what' (time only from a real clock): %s" % line[:40])
+    after = [line for line in lines[admin + 1:] if line.strip()]
+    if admin + 1 < len(lines) and lines[admin + 1].strip():
+        problems.append("Put a blank line after **Admin-Zone**.")
+    if not after or not (CONCLUSION_LINE.match(after[0].strip()) or SECTION_LINE.match(after[0])):
+        problems.append("**Admin-Zone** must be followed by the Conclusion line, then the eight sections.")
+    return problems
+
+
 def check(text):
     body, conclusion_label, conclusion, sections, layout = split_reply(text)
     words = units(strip_code(text))
@@ -218,6 +256,7 @@ def check(text):
             if number in ID_KEYS:
                 violations.extend(question_problems(number, subs))
         warnings.extend(duplicate_items(sections))
+        violations.extend(zone_problems(text))
 
     outside_code = re.sub(r"`[^`]*`", "", strip_code(text))
     section_candidates = [line for line in strip_code(text).splitlines() if SECTION_CANDIDATE.match(line)]
@@ -233,7 +272,8 @@ def check(text):
         violations.append("The reply contains emoji; write status in words.")
     if re.search(r"\*\*\[|^[-*]\s+\[[^\]]+\]", outside_code, re.M):
         violations.append("Labels use square brackets; write bold labels without them.")
-    if re.search(r"```[^\n]*\n(?:(?!```).)*\n\d\.\s+\*\*[^*]+:\*\*", text, re.S):
+    if any(re.search(r"(?m)^\d\.\s+\*\*[^*]+:\*\*", block.group(1))
+           for block in re.finditer(r"```[^\n]*\n(.*?)```", text, re.S)):
         violations.append("The conclusion part is inside a code block; the reader would see raw markers.")
 
     body_sentences = sentences(body)
@@ -243,7 +283,8 @@ def check(text):
     if conclusion is not None and body_words > BODY_WORD_BUDGET:
         warnings.append("Body has %g words (target about %d); trim optional detail, keep every needed fact."
                         % (body_words, BODY_WORD_BUDGET))
-    first = next((line for line in strip_code(body).splitlines() if line.strip()), conclusion or "")
+    first = next((line for line in strip_code(body).splitlines() if line.strip() and not ZONE_LINE.match(line)
+                  and not STEP_LINE.match(line)), conclusion or "")
     if OPENERS.match(re.sub(r"^[#*\s-]+", "", first)):
         violations.append("The reply opens with a filler opener: %s..." % first[:40])
     if body_sentences and CLOSERS.search(body_sentences[-1]):

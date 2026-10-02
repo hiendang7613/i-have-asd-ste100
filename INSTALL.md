@@ -34,7 +34,7 @@ codex plugin marketplace add hiendang7613/i-have-asd-ste100
 codex plugin add i-have-asd-ste100@i-have-asd-ste100
 ```
 
-Codex loads the skill and the plugin hooks from `hooks/hooks.json`. On first install, and after the hook definition changes, run `/hooks`, review the plugin hooks, and trust them. Codex skips plugin hooks until you trust the current definition. Start a new session after trusting the hooks: `SessionStart` loads the reply rules, and `UserPromptSubmit` adds the short reminder. Without hook trust, the skill remains available for manual use.
+Codex loads the skill and the plugin hooks from `hooks/hooks.json`. On first install, and after the hook definition changes, run `/hooks`, review the plugin hooks, and trust them. Codex skips plugin hooks until you trust the current definition. Start a new session after trusting the hooks: `SessionStart` loads the reply rules, and `UserPromptSubmit` adds the short reminder with the local time. The per-step clock uses Claude Code's `PostToolBatch` event; in Codex, Agents-Zone steps carry a time only when a clock reading is available. Without hook trust, the skill remains available for manual use.
 
 The commands above use the Codex CLI. The ChatGPT web app does not deploy local hook scripts into its runtime.
 

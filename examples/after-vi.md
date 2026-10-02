@@ -1,5 +1,13 @@
+**Agents-Zone**
+- `4:12 PM` test đăng nhập lỗi với client mới => đọc `src/auth.ts`
+- `4:15 PM` `verifyToken` đọc một header riêng => sửa để đọc `Authorization`
+- `4:18 PM` kiểm tra bản sửa => chạy `npm test`
+
+**Result-Zone**
 - **Nguyên nhân:** `verifyToken` trong `src/auth.ts:42` đọc token từ một header riêng. Client mới gửi `Authorization: Bearer <token>`.
 - **Cách sửa:** `verifyToken` nay đọc header `Authorization`.
+
+**Admin-Zone**
 
 **Conclusion:** Test đăng nhập đã đạt; còn một test thanh toán lỗi, chưa kiểm tra nguyên nhân.
 

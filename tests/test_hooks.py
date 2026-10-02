@@ -40,6 +40,7 @@ class HookTests(unittest.TestCase):
     def test_both_events_use_the_same_launcher(self):
         prompt_command = HOOKS["hooks"]["UserPromptSubmit"][0]["hooks"][0]["command"]
         self.assertEqual(prompt_command, LAUNCH)
+        self.assertEqual(HOOKS["hooks"]["PostToolBatch"][0]["hooks"][0]["command"], LAUNCH)
         self.assertIn("startup", HOOKS["hooks"]["SessionStart"][0]["matcher"])
 
     def test_on_by_default_after_install(self):
@@ -72,11 +73,35 @@ class HookTests(unittest.TestCase):
         self.opt_in()
         out = self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "fix the bug"})
         self.assertEqual(out.count("\n"), 1)
-        self.assertLess(len(out.encode()), 400)
+        # 480 bytes (was 400 until 0.11.0): the three zone names and the local time are worth about 50 bytes per prompt.
+        self.assertLess(len(out.encode()), 480)
         self.assertIn("0. **Done:**, 1. **InProgress:**, 2. **Pending:**, 3. **Questions:**, 4. **Todos:**, 5. **Backlog:**, "
                       "6. **Risks:**, 7. **AIIdeas:**", out)
+        for zone in ("**Agents-Zone** (every step: `time` why => what)", "**Result-Zone**", "**Admin-Zone**"):
+            self.assertIn(zone, out)
+        self.assertRegex(out, r" Now (1[0-2]|[1-9]):[0-5][0-9] (AM|PM)\.\n$")
         self.assertIn("items are sub-items with a bold key", out)
         self.assertTrue(out.isascii())
+
+    def test_post_tool_batch_gives_the_local_time_unless_the_mode_is_off(self):
+        batch = {"hook_event_name": "PostToolBatch", "session_id": "t", "tool_calls": [{"tool_name": "Read"}]}
+        data = json.loads(self.run_hook(batch))
+        self.assertEqual(data["hookSpecificOutput"]["hookEventName"], "PostToolBatch")
+        self.assertRegex(data["hookSpecificOutput"]["additionalContext"],
+                         r"^i-have-asd-ste100 clock: (1[0-2]|[1-9]):[0-5][0-9] (AM|PM)$")
+        self.assertTrue(data["hookSpecificOutput"]["additionalContext"].isascii())
+        self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "t", "prompt": "stop ste mode"})
+        self.assertEqual(self.run_hook(batch), "")
+        self.assertEqual(self.run_hook(dict(batch, session_id="u"), I_HAVE_ASD_STE100="off"), "")
+        self.opt_out()
+        self.assertEqual(self.run_hook(dict(batch, session_id="u")), "")
+
+    def test_clock_uses_twelve_hour_ascii_time(self):
+        script = ("import('./hooks/ste-mode.mjs').then(m => console.log([0, 9, 12, 16, 23].map(h => "
+                  "m.clock(new Date(2026, 9, 2, h, 5))).join('|')))")
+        out = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True, timeout=30,
+                             env=self.env | {"I_HAVE_ASD_STE100": "off"})
+        self.assertEqual(out.stdout.strip().splitlines()[-1], "12:05 AM|9:05 AM|12:05 PM|4:05 PM|11:05 PM")
 
     def test_stop_and_restart_work_per_session(self):
         self.opt_in()

@@ -44,7 +44,8 @@ class SkillTests(unittest.TestCase):
         self.assertIn("disable-model-invocation: true", self.front)
 
     def test_skill_stays_small_because_always_on_injects_it_every_session(self):
-        self.assertLessEqual(len(self.text.encode()), 6500)
+        # 6,900 bytes (6,500 until 0.11.0): the admin's three zones and the clock rule cost about 100 tokens per session start.
+        self.assertLessEqual(len(self.text.encode()), 6900)
 
     def test_required_sections_and_the_numbered_conclusion_part(self):
         for heading in ("## Persistence", "## The shape", "## Format for fast reading", "## Sentences", "## Protect meaning",
@@ -71,7 +72,12 @@ class SkillTests(unittest.TestCase):
                      "A user or project format request changes this shape only when higher rules allow it"):
             self.assertIn(rule, self.text)
         self.assertIn("do not count syllable spaces as words", self.text)
-        self.assertIn("Conclusion after the body", self.text)
+        for zone in ("`**Agents-Zone**`", "`**Result-Zone**`", "`**Admin-Zone**`"):
+            self.assertIn(zone, self.text)
+        self.assertIn("`` - `4:43 PM` why => what ``", self.text)
+        self.assertIn("Take the time only from a clock note or command output", self.text)
+        self.assertLess(self.text.index("`**Agents-Zone**`"), self.text.index("`**Result-Zone**`"))
+        self.assertLess(self.text.index("`**Admin-Zone**`"), self.text.index("`**Conclusion:**`"))
         self.assertIn("These are targets, not limits", self.text)
         self.assertIn("Do not create a file only to shorten a reply", self.text)
         self.assertIn("For the full format", self.text)

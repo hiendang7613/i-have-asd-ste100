@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.0 — 2026-10-03
+Three zones, chosen by the first user. The eight sections do not change.
+- Each full reply has three zones, each under a bold label line: **Agents-Zone** (every step this turn, one line each: `` - `4:43 PM` why => what ``), **Result-Zone** (key-first bullets) and **Admin-Zone** (the Conclusion line and the eight sections).
+- Step times come from a real clock only. In Claude Code, the prompt reminder carries the local time and a new `PostToolBatch` hook adds it after each batch of tool calls, about a dozen tokens per batch. Without a clock reading, a step has no time.
+- The checker requires the three labels in order with blank lines around them, checks step lines and their time format, and no longer mistakes a code block in the body for a wrapped conclusion part.
+- The skill size limit rises from 6,500 to 6,900 bytes and the reminder limit from 400 to 480 bytes, for the zone rules and the time.
+
 ## 0.10.0 — 2026-10-02
 - Keep every requested review finding and failure visible; the five-item target applies only to ordinary scan lists. The many-findings eval now checks all nine supplied findings and locations.
 - Require ASCII digits and colons in structural markers, three-space section items and five-space options. The checker rejects duplicate Conclusion markers and malformed short replies that attempt the full section format.

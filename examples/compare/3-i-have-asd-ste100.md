@@ -1,5 +1,14 @@
+**Agents-Zone**
+- `4:12 PM` the login test fails for the new client => read `src/auth.ts`
+- `4:15 PM` `verifyToken` reads a custom header => changed it to read `Authorization`
+- `4:18 PM` check the fix => ran `npm test`
+- `4:21 PM` the fix needs staging => deployed to staging
+
+**Result-Zone**
 - **Cause:** `verifyToken` in `src/auth.ts:42` read a custom header. The new client sends `Authorization: Bearer <token>`.
 - **Fix:** `verifyToken` now reads the `Authorization` header.
+
+**Admin-Zone**
 
 **Conclusion:** Login is fixed and on staging; one payment test still fails, cause not checked.
 

@@ -1,5 +1,13 @@
+**Agents-Zone**
+- `4:12 PM` la prueba de login falla con el cliente nuevo => leer `src/auth.ts`
+- `4:15 PM` `verifyToken` lee una cabecera propia => cambiarlo para leer `Authorization`
+- `4:18 PM` comprobar la corrección => ejecutar `npm test`
+
+**Result-Zone**
 - **Causa:** `verifyToken` en `src/auth.ts:42` leía el token de una cabecera propia. El cliente nuevo envía `Authorization: Bearer <token>`.
 - **Corrección:** `verifyToken` ahora lee la cabecera `Authorization`.
+
+**Admin-Zone**
 
 **Conclusion:** La prueba de login ya pasa; una prueba de pagos sigue fallando y no revisé la causa.
 

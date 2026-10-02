@@ -6,8 +6,15 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from check_reply import check  # noqa: E402
 
-FULL = """- **Fix:** `verifyToken` now reads the `Authorization` header.
+FULL = """**Agents-Zone**
+- `4:12 PM` the login test fails => read `src/auth.ts`
+- `4:18 PM` check the fix => ran `npm test`
+
+**Result-Zone**
+- **Fix:** `verifyToken` now reads the `Authorization` header.
 - **Tests:** 214 ran and 213 pass.
+
+**Admin-Zone**
 
 **Conclusion:** Login is fixed; one payment test still fails, cause not checked.
 
@@ -49,7 +56,8 @@ class ShapeTests(unittest.TestCase):
         self.assertTrue(any("No conclusion part" in v for v in before["violations"]))
 
     def test_all_eight_sections_are_always_shown_and_empty_ones_show_only_the_label(self):
-        alone = "I renamed the file.\n\n**Conclusion:** The file is renamed.\n"
+        alone = ("**Agents-Zone**\n\n**Result-Zone**\n- **Rename:** done.\n\n**Admin-Zone**\n\n"
+                 "**Conclusion:** The file is renamed.\n")
         self.assertTrue(any("must be shown" in v for v in check(alone)["violations"]))
         labels = ["Done", "InProgress", "Pending", "Questions", "Todos", "Backlog", "Risks", "AIIdeas"]
         minimal = alone + "\n" + "\n".join("%d. **%s:**" % (n, label) for n, label in enumerate(labels)) + "\n"
@@ -112,10 +120,42 @@ class ShapeTests(unittest.TestCase):
         self.assertTrue(report["ok"], report)
         self.assertEqual(report["stats"]["sections"], list(range(8)))
         self.assertEqual(report["stats"]["body_words"], check(FULL)["stats"]["body_words"])
-        glued = first.replace("213 pass.\n\n0.", "213 pass.\n0.")
+        glued = first.replace("**Admin-Zone**\n\n0.", "**Admin-Zone**\n0.")
         self.assertNotEqual(glued, first)
         self.assertTrue(any("blank line" in v for v in check(glued)["violations"]))
         self.assertTrue(any("No valid Conclusion" in v for v in check(body + "\n\n" + sections)["violations"]))
+
+    def test_three_zone_labels_in_order_with_timed_step_lines(self):
+        self.assertTrue(check(FULL)["ok"], check(FULL))
+        for zone in ("**Agents-Zone**", "**Result-Zone**", "**Admin-Zone**"):
+            with self.subTest(missing=zone):
+                self.assertTrue(any("three zone labels" in v for v in check(FULL.replace(zone + "\n", ""))["violations"]))
+        swapped = FULL.replace("**Agents-Zone**", "**X**").replace("**Result-Zone**", "**Agents-Zone**").replace("**X**", "**Result-Zone**")
+        self.assertTrue(any("three zone labels" in v for v in check(swapped)["violations"]))
+        no_time = FULL.replace("- `4:12 PM` the login", "- the login")
+        self.assertTrue(check(no_time)["ok"], check(no_time))
+        for bad in ("- `16:12` the login test fails => read", "- `4:12 PM` the login test fails, read",
+                    "- [4:12 PM] the login test fails => read", "* `4:12 PM` the login test fails => read"):
+            with self.subTest(bad=bad):
+                wrong = FULL.replace("- `4:12 PM` the login test fails => read", bad)
+                self.assertNotEqual(wrong, FULL)
+                self.assertFalse(check(wrong)["ok"])
+        glued = FULL.replace("`npm test`\n\n**Result-Zone**", "`npm test`\n**Result-Zone**")
+        self.assertNotEqual(glued, FULL)
+        self.assertTrue(any("blank line before **Result-Zone**" in v for v in check(glued)["violations"]))
+        joined = FULL.replace("**Admin-Zone**\n\n**Conclusion:**", "**Admin-Zone**\n**Conclusion:**")
+        self.assertNotEqual(joined, FULL)
+        self.assertTrue(any("blank line after **Admin-Zone**" in v for v in check(joined)["violations"]))
+        prose = FULL.replace("**Result-Zone**\n- **Fix:**", "**Result-Zone**\nThe fix: ")
+        self.assertNotEqual(prose, FULL)
+        self.assertTrue(any("start a list or leave a blank line" in v for v in check(prose)["violations"]))
+        late = FULL.replace("\n\n**Admin-Zone**\n\n**Conclusion:**", "\n\n**Conclusion:**").replace("\n0. **Done:**", "\n**Admin-Zone**\n\n0. **Done:**", 1)
+        self.assertFalse(check(late)["ok"])
+        extra = FULL.replace("**Admin-Zone**\n\n**Conclusion:**", "**Admin-Zone**\n\n- **Note:** one more fact.\n\n**Conclusion:**")
+        self.assertNotEqual(extra, FULL)
+        self.assertTrue(any("must be followed by the Conclusion line" in v for v in check(extra)["violations"]))
+        fenced = "```\n**Agents-Zone**\n```\n\n" + FULL
+        self.assertTrue(check(fenced)["ok"], check(fenced))
 
     def test_long_body_warning_does_not_ask_for_a_file(self):
         long_body = FULL.replace("- **Tests:** 214 ran and 213 pass.", "- **Tests:** " + "word " * 260 + "end.")
@@ -225,6 +265,11 @@ class StyleTests(unittest.TestCase):
         self.assertNotEqual(bracket_body, FULL)
         self.assertTrue(any("square brackets" in v for v in check(bracket_body)["violations"]))
         self.assertTrue(check(FULL.replace("check `payment.spec.ts:88`.", "check `arr[0]` in `payment.spec.ts:88`."))["ok"])
+
+    def test_a_code_block_in_the_body_is_not_a_wrapped_conclusion(self):
+        body_code = FULL.replace("**Result-Zone**\n", "**Result-Zone**\n- **Command:** run this:\n\n```sh\nnpm test\n```\n\n")
+        self.assertNotEqual(body_code, FULL)
+        self.assertTrue(check(body_code)["ok"], check(body_code))
 
     def test_conclusion_wrapped_in_a_code_block_fails(self):
         wrapped = "Here is the status.\n\n```markdown\n" + FULL + "```\n\n**Conclusion:** See above.\n"

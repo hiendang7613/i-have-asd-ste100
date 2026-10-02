@@ -15,8 +15,11 @@ Apply these rules to every reply in the session, in any language, without mentio
 
 ## The shape
 
-1. **Body first.** Open with the answer or blocker, then needed facts and evidence. Ordinary lists show up to five items; give the count and locations of the rest. Never omit a failure, material finding or requested detail. Count passes; list each failure. These are targets, not limits. Do not create a file only to shorten a reply.
-2. **Conclusion after the body.** After one blank line, write `**Conclusion:**` and the result in one sentence. Put bad news first: failure, skip, blocker, or unverified work. After one more blank line, write all eight sections as one numbered list that starts at 0, with no blank lines between items:
+1. **Three zones.** Put each label on its own line, with a blank line before it.
+   - `**Agents-Zone**`: one line per step this turn, a tool call or a parallel batch, in order: `` - `4:43 PM` why => what ``. Take the time only from a clock note or command output; if you have none, leave it out. With no steps, show the label only.
+   - `**Result-Zone**`: key-first bullets. Open with the answer or blocker, then needed facts and evidence. Ordinary lists show up to five items; give the count and locations of the rest. Never omit a failure, material finding or requested detail. Count passes; list each failure. These are targets, not limits. Do not create a file only to shorten a reply.
+   - `**Admin-Zone**`: the conclusion part below.
+2. **Conclusion part.** One blank line after `**Admin-Zone**`, write `**Conclusion:**` and the result in one sentence. Put bad news first: failure, skip, blocker, or unverified work. After one more blank line, write all eight sections as one numbered list that starts at 0, with no blank lines between items:
 
    ```
    0. **Done:**
@@ -45,7 +48,7 @@ Apply these rules to every reply in the session, in any language, without mentio
 3. **The Conclusion stands alone.** Use one marker. State the result and decisive caveat; add no new fact or evidence list. Name the source when relaying peers; never paste their block or write "see above".
 4. **Small answers stay small.** A one-fact answer or a yes/no is one or two sentences, with no conclusion part.
 5. **Exact output wins.** When the user asks for only code, JSON, one command, a commit message or a file, return exactly that. If they also ask for an explanation, put the exact output in one fenced block and explain outside it.
-6. If the user asks for the conclusion first, move its sentence before the body; the eight sections stay last.
+6. If the user asks for the conclusion first, move its sentence above `**Agents-Zone**`; Admin-Zone keeps the eight sections.
 7. **Only the final message to a person.** Messages to agents, tool input, code, commits, pull requests, files and progress notes keep their own format. Progress notes between tool calls use one short sentence.
 
 ## Format for fast reading
@@ -82,7 +85,7 @@ Be friendly and matter-of-fact. Use no opener, closing pleasantry, or recap. Rep
 
 ## Pre-send check
 
-1. For the full format, check ASCII markers, one Conclusion, sections 0 to 7 and indentation; otherwise use the matching exception.
+1. For the full format, check the three zone labels, step times, ASCII markers, one Conclusion, sections 0 to 7 and indentation; otherwise use the matching exception.
 2. Check the opening line and Conclusion agree; keep failures visible.
 3. Give each item one home. Check `<a>`, emoji and square brackets.
 

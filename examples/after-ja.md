@@ -1,5 +1,13 @@
+**Agents-Zone**
+- `4:12 PM` 新しいクライアントでログインテストが失敗 => `src/auth.ts` を読む
+- `4:15 PM` `verifyToken` が独自ヘッダーを読んでいた => `Authorization` を読むように修正
+- `4:18 PM` 修正を確認 => `npm test` を実行
+
+**Result-Zone**
 - **原因:** `src/auth.ts:42` の `verifyToken` が独自のヘッダーを読んでいました。新しいクライアントは `Authorization: Bearer <token>` を送ります。
 - **修正:** `verifyToken` は `Authorization` ヘッダーを読むようになりました。
+
+**Admin-Zone**
 
 **Conclusion:** ログインのテストは成功、決済テスト 1 件は失敗中で原因は未確認です。
 

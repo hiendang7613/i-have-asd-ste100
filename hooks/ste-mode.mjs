@@ -1,4 +1,4 @@
-// i-have-asd-ste100 hook for SessionStart and UserPromptSubmit (Claude Code; Codex uses the same hooks.json).
+// i-have-asd-ste100 hook for SessionStart, UserPromptSubmit and PostToolBatch (Claude Code; Codex runs no plugin hooks).
 //
 // On by default once the plugin is installed. Opt out everywhere with the file .i-have-asd-ste100-off in
 // $CLAUDE_CONFIG_DIR (default ~/.claude) or $CODEX_HOME (default ~/.codex), or for one process with
@@ -7,6 +7,8 @@
 // "stop ste mode" anywhere outside quotes or code (or the exact prompt "normal mode") turns it off for the session;
 // "ste mode" as the whole prompt, or "start ste mode" anywhere, turns it on again. The per-session state lives in
 // $CLAUDE_CONFIG_DIR/.i-have-asd-ste100-sessions/ so it survives compaction and resume.
+// The model has no clock: the reminder and PostToolBatch give it the local time, so each Agents-Zone step can carry
+// a real time. PostToolBatch fires once per batch of tool calls and adds about a dozen tokens of context.
 // Any failure exits 0 with no output: this hook must never block a session or a prompt.
 
 import fs from "node:fs";
@@ -20,10 +22,17 @@ const ON_EXACT = new Set(["ste mode", "start ste mode", "ste mode on"]);
 const OFF_ANYWHERE = /\bstop ste mode\b/;
 const ON_ANYWHERE = /\b(?:start ste mode|ste mode on)\b/;
 export const REMINDER =
-  "[i-have-asd-ste100] Reply shape: key-first bullets; **Conclusion:** one sentence; blank line; sections 0-7, " +
-  "no blank lines: 0. **Done:**, 1. **InProgress:**, 2. **Pending:**, 3. **Questions:**, 4. **Todos:**, 5. **Backlog:**, " +
-  "6. **Risks:**, 7. **AIIdeas:**. Label lines bare; items are sub-items with a bold key. Recommend as `<a>`. " +
-  'No emoji or square brackets. "stop ste mode" turns this off.';
+  "[i-have-asd-ste100] Reply shape: **Agents-Zone** (every step: `time` why => what), **Result-Zone** (key-first " +
+  "bullets), **Admin-Zone**: **Conclusion:** one sentence, blank line, 0. **Done:**, 1. **InProgress:**, 2. **Pending:**, " +
+  "3. **Questions:**, 4. **Todos:**, 5. **Backlog:**, 6. **Risks:**, 7. **AIIdeas:**; items are sub-items with a bold key; " +
+  '`<a>` = recommended. No emoji or square brackets. "stop ste mode" turns this off.';
+
+// Local wall-clock time as "4:43 PM" (plain ASCII; the Intl formatter can insert a narrow no-break space).
+export function clock(now = new Date()) {
+  const hour = now.getHours();
+  const minute = String(now.getMinutes()).padStart(2, "0");
+  return `${hour % 12 || 12}:${minute} ${hour < 12 ? "AM" : "PM"}`;
+}
 
 const ENV_SWITCHES = ["I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"];
 
@@ -100,7 +109,12 @@ function run() {
       return "[i-have-asd-ste100] STE reply mode is off for this session. Confirm in one line, then use your default style.\n";
     }
     if (ON_EXACT.has(prompt) || ON_ANYWHERE.test(free)) fs.rmSync(marker, { force: true });
-    return fs.existsSync(marker) ? "" : `${REMINDER}\n`;
+    return fs.existsSync(marker) ? "" : `${REMINDER} Now ${clock()}.\n`;
+  }
+  if (event === "PostToolBatch") {
+    if (fs.existsSync(marker)) return "";
+    const additionalContext = `i-have-asd-ste100 clock: ${clock()}`;
+    return `${JSON.stringify({ hookSpecificOutput: { hookEventName: "PostToolBatch", additionalContext } })}\n`;
   }
   return "";
 }

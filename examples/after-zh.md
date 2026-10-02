@@ -1,5 +1,13 @@
+**Agents-Zone**
+- `4:12 PM` 新客户端的登录测试失败 => 阅读 `src/auth.ts`
+- `4:15 PM` `verifyToken` 读取了自定义请求头 => 改为读取 `Authorization`
+- `4:18 PM` 验证修复 => 运行 `npm test`
+
+**Result-Zone**
 - **原因:** `src/auth.ts:42` 中的 `verifyToken` 读取了自定义请求头。新客户端发送 `Authorization: Bearer <token>`。
 - **修复:** `verifyToken` 现在读取 `Authorization` 请求头。
+
+**Admin-Zone**
 
 **Conclusion:** 登录测试已通过；一个支付测试仍然失败，原因未检查。
 
