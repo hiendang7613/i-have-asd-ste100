@@ -75,7 +75,8 @@ def sentences(text):
 def split_reply(text):
     """Return (body, conclusion_label, conclusion_text, sections, layout_problems). sections is a list of
     (number, label, text, sub_items). The conclusion part is the last bold-label line, one blank line,
-    then a numbered list whose items start with a bold label."""
+    then a numbered list whose items start with a bold label. When the user asked for the conclusion
+    first, the Conclusion line opens the reply and the numbered list still ends it."""
     lines = text.rstrip().splitlines()
     index = len(lines) - 1
     tail = []
@@ -85,6 +86,11 @@ def split_reply(text):
         index -= 1
     conclusion = CONCLUSION_LINE.match(lines[index].strip()) if index >= 0 else None
     has_sections = any(SECTION_LINE.match(line) for line in tail)
+    body_lines = lines[:index]
+    top = next((i for i, line in enumerate(lines[:index]) if line.strip()), None)
+    if not conclusion and has_sections and top is not None and CONCLUSION_LINE.match(lines[top].strip()):
+        conclusion = CONCLUSION_LINE.match(lines[top].strip())
+        body_lines = lines[top + 1:index + 1]
     if not conclusion or (any(line.strip() for line in tail) and not has_sections):
         return text, None, None, [], []
     problems = []
@@ -101,7 +107,7 @@ def split_reply(text):
             sections.append((int(match.group(1)), match.group(2).strip(), match.group(3).strip(), []))
         elif SUB_ITEM.match(line) and sections:
             sections[-1][3].append(line)
-    return "\n".join(lines[:index]), conclusion.group(1).strip(), conclusion.group(2).strip(), sections, problems
+    return "\n".join(body_lines), conclusion.group(1).strip(), conclusion.group(2).strip(), sections, problems
 
 
 def item_problems(number, sub_items):
@@ -175,7 +181,8 @@ def check(text):
         warnings.append("Long sentence (%g words): %s..." % (units(sentence), sentence[:60]))
     body_words = units(strip_code(body))
     if conclusion is not None and body_words > BODY_WORD_BUDGET:
-        warnings.append("Body has %g words (target about %d); move detail to a file." % (body_words, BODY_WORD_BUDGET))
+        warnings.append("Body has %g words (target about %d); trim optional detail, keep every needed fact."
+                        % (body_words, BODY_WORD_BUDGET))
     first = next((line for line in strip_code(body).splitlines() if line.strip()), conclusion or "")
     if OPENERS.match(re.sub(r"^[#*\s-]+", "", first)):
         violations.append("The reply opens with a filler opener: %s..." % first[:40])

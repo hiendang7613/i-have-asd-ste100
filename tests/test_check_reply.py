@@ -98,6 +98,25 @@ class ShapeTests(unittest.TestCase):
                 self.assertNotEqual(text, FULL)
                 self.assertTrue(any("options marked" in v for v in check(text)["violations"]))
 
+    def test_conclusion_first_on_request_still_parses(self):
+        body, rest = FULL.split("\n\n**Conclusion:**", 1)
+        line, sections = rest.split("\n\n", 1)
+        first = "**Conclusion:**" + line + "\n\n" + body + "\n\n" + sections
+        report = check(first)
+        self.assertTrue(report["ok"], report)
+        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
+        self.assertEqual(report["stats"]["body_words"], check(FULL)["stats"]["body_words"])
+        glued = first.replace("213 pass.\n\n0.", "213 pass.\n0.")
+        self.assertNotEqual(glued, first)
+        self.assertTrue(any("blank line" in v for v in check(glued)["violations"]))
+        self.assertTrue(any("No conclusion part" in v for v in check(body + "\n\n" + sections)["violations"]))
+
+    def test_long_body_warning_does_not_ask_for_a_file(self):
+        long_body = FULL.replace("- **Tests:** 214 ran and 213 pass.", "- **Tests:** " + "word " * 260 + "end.")
+        warnings = check(long_body)["warnings"]
+        self.assertTrue(any(w.startswith("Body has") for w in warnings), warnings)
+        self.assertFalse(any("file" in w for w in warnings), warnings)
+
     def test_conclusion_line_length(self):
         long_line = FULL.replace("Login is fixed; one payment test still fails, cause not checked.", " ".join(["word"] * 26) + ".")
         self.assertTrue(any("Conclusion line has 26" in v for v in check(long_line)["violations"]))

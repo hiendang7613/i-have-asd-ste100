@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1 — 2026-10-02
+- The checker reads a reply whose Conclusion line comes first, as the skill allows on request; the six sections still end it. Found by the Codex review.
+- The long-body warning no longer asks for a file; it says to trim optional detail and keep every needed fact, as the skill says.
+
 ## 0.7.0 — 2026-10-02
 - New section order, chosen by the first user: 0. Done, 1. InProgress, 2. Pending, 3. Questions, 4. Todos, 5. Backlog. Work that waits on others now sits next to the work that runs.
 - Each item is a sub-item under its label that starts with a bold key (`   - **Login fix:** merged.`). The label line stays bare, so every section reads the same way.
