@@ -10,7 +10,7 @@ metadata:
 
 # i-have-asd-ste100
 
-The reader is busy. They read the end of a reply first and scan up only if they need to. Write so that a reader who reads only the conclusion part is still right. A fixed shape is faster to scan than a clever free one.
+The reader is busy. They read the end of a reply first and scan up only if they need to. Write so that a reader who reads only the conclusion part is still right.
 
 ## Persistence
 
@@ -19,14 +19,14 @@ These rules apply to every reply for the rest of the session, in every language.
 ## The shape
 
 1. **Body first.** Give only what the reader needs to trust the conclusion: facts, evidence, steps. Use at most five bullets or short paragraphs, about 250 words or the same reading time in the user's language. Put longer detail in a file and give its path.
-2. **Conclusion part last.** After one blank line, write `**Conclusion:**` and the result in one sentence. Bad news first: failure, skip, blocker, unverified work. Then these sections, each a top-level list item with a bold label, always in this order:
+2. **Conclusion part last.** After one blank line, write `**Conclusion:**` and the result in one sentence. Bad news first: failure, skip, blocker, unverified work. Then these sections, each starting its own line with its bold label, one blank line between sections, always in this order:
    - `**0.Done:**` work finished and checked, with its evidence.
    - `**1.InProgress:**` work running now, and who runs it.
    - `**2.Questions:**` everything that needs the user, one sub-item per question: `**Q1.**`, `**Q2.**`. Start an approval with "Approve:". Give options as sub-items: the recommended one as `<a>` in a code span, the others as (b), (c).
    - `**3.Pending:**` work waiting for someone or something else, and on what.
    - `**4.Backlog:**` work not started yet, in order; the first item is what you do next.
 
-   Leave out an empty section, but never renumber: 3 is always Pending. Write the label words in the user's language and keep them identical in the session. Put more than one item as sub-items. If only the result needs saying, write only the Conclusion line.
+   Leave out an empty section, but never renumber: 3 is always Pending. Write the label words in the user's language and keep them identical in the session. Put more than one item as indented sub-items. If only the result needs saying, write only the Conclusion line.
 3. **The conclusion part stands alone.** Name the thing, never "see above". Do not repeat the body in it.
 4. **Small answers stay small.** A one-fact answer or a yes/no is one or two sentences, with no conclusion part.
 5. **Exact output wins.** When the user asks for only code, JSON, one command, a commit message or a file, give exactly that.
@@ -70,7 +70,7 @@ Be friendly and matter-of-fact. No opener, no closing pleasantry, no recap. Repo
 
 ## Pre-send check
 
-1. Does the final message end with the conclusion part, with the sections in order and no empty ones?
+1. Does the final message end with the conclusion part, sections in order, a blank line between them, none empty?
 2. Read only the conclusion part. Is anything misleading? Is a failure hidden?
 3. Does every line start with its key? Does any sentence need a second breath?
 4. Is any option list missing its `<a>`, or is any emoji or square bracket left?

@@ -11,14 +11,18 @@ FULL = """- **Fix:** `verifyToken` now reads the `Authorization` header.
 
 **Conclusion:** Login is fixed; one payment test still fails, cause not checked.
 
-- **0.Done:** Login fix merged.
-- **1.InProgress:** CI reruns the full suite.
-- **2.Questions:**
+**0.Done:** Login fix merged.
+
+**1.InProgress:** CI reruns the full suite.
+
+**2.Questions:**
   - **Q1.** Approve: deploy to production?
     - `<a>` After CI passes.
     - (b) Now.
-- **3.Pending:** Review from the other agent.
-- **4.Backlog:**
+
+**3.Pending:** Review from the other agent.
+
+**4.Backlog:**
   - Check `payment.spec.ts:88`.
   - Update `jsonwebtoken`.
 """
@@ -44,15 +48,15 @@ class ShapeTests(unittest.TestCase):
         self.assertTrue(check('```json\n{"status": "ok", "count": 3}\n```')["ok"])
 
     def test_sections_out_of_order_repeated_or_out_of_range_fail(self):
-        swapped = FULL.replace("- **3.Pending:** Review from the other agent.\n", "").replace(
-            "- **1.InProgress:** CI reruns the full suite.\n", "- **3.Pending:** Review from the other agent.\n")
+        swapped = FULL.replace("**3.Pending:** Review from the other agent.\n\n", "").replace(
+            "**1.InProgress:** CI reruns the full suite.\n", "**3.Pending:** Review from the other agent.\n")
         self.assertNotEqual(swapped, FULL)
         self.assertFalse(check(swapped)["ok"])
         self.assertFalse(check(FULL.replace("**4.Backlog:**", "**5.Backlog:**"))["ok"])
         self.assertFalse(check(FULL.replace("**1.InProgress:**", "**0.InProgress:**"))["ok"])
 
     def test_empty_sections_must_be_left_out(self):
-        report = check(FULL.replace("- **3.Pending:** Review from the other agent.", "- **3.Pending:**"))
+        report = check(FULL.replace("**3.Pending:** Review from the other agent.", "**3.Pending:**"))
         self.assertTrue(any("Section 3" in v and "empty" in v for v in report["violations"]))
 
     def test_each_question_with_options_marks_exactly_one_recommended(self):
@@ -63,6 +67,16 @@ class ShapeTests(unittest.TestCase):
                 self.assertNotEqual(text, FULL)
                 self.assertTrue(any("options marked" in v for v in check(text)["violations"]))
 
+    def test_sections_need_a_blank_line_before_them_unless_bulleted(self):
+        packed = FULL.replace("    - (b) Now.\n\n**3.Pending:**", "    - (b) Now.\n**3.Pending:**")
+        self.assertNotEqual(packed, FULL)
+        self.assertTrue(any("blank line before each section" in v for v in check(packed)["violations"]))
+        bulleted = FULL
+        for n in range(5):
+            bulleted = bulleted.replace("\n\n**%d." % n, "\n- **%d." % n)
+        self.assertNotEqual(bulleted, FULL)
+        self.assertTrue(check(bulleted)["ok"], check(bulleted))
+
     def test_conclusion_line_length(self):
         long_line = FULL.replace("Login is fixed; one payment test still fails, cause not checked.", " ".join(["word"] * 26) + ".")
         self.assertTrue(any("Conclusion line has 27" in v or "Conclusion line has 26" in v for v in check(long_line)["violations"]))
@@ -72,7 +86,7 @@ class StyleTests(unittest.TestCase):
     def test_emoji_and_square_brackets_fail_but_code_spans_may_hold_anything(self):
         self.assertFalse(check(FULL.replace("**0.Done:**", "**0.Done:** ✅"))["ok"])
         self.assertFalse(check(FULL.replace("**Conclusion:**", "\U0001F3AF **Conclusion:**"))["ok"])
-        self.assertFalse(check(FULL.replace("- **0.Done:**", "- **[0.Done]:**"))["ok"])
+        self.assertFalse(check(FULL.replace("**0.Done:**", "**[0.Done]:**"))["ok"])
         bracket_body = FULL.replace("- **Fix:**", "- **[Fix]:**")
         self.assertNotEqual(bracket_body, FULL)
         self.assertTrue(any("square brackets" in v for v in check(bracket_body)["violations"]))
@@ -101,8 +115,8 @@ class StyleTests(unittest.TestCase):
 class MultilingualTests(unittest.TestCase):
     def test_labels_in_any_language_are_found_by_structure(self):
         swahili = ("- **Kurekebisha:** Kuingia kumerekebishwa.\n\n**Hitimisho:** Jaribio moja la malipo bado linashindwa.\n\n"
-                   "- **0.Imekamilika:** Kuingia kumerekebishwa.\n- **2.Maswali:**\n  - **Q1.** Niangalie sasa?\n"
-                   "    - `<a>` Ndiyo.\n    - (b) Baadaye.\n- **4.Yaliyobaki:** Kusasisha jsonwebtoken.\n")
+                   "**0.Imekamilika:** Kuingia kumerekebishwa.\n\n**2.Maswali:**\n  - **Q1.** Niangalie sasa?\n"
+                   "    - `<a>` Ndiyo.\n    - (b) Baadaye.\n\n**4.Yaliyobaki:** Kusasisha jsonwebtoken.\n")
         report = check(swahili)
         self.assertTrue(report["ok"], report)
         self.assertEqual(report["stats"]["sections"], [0, 2, 4])

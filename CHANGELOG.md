@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.1 — 2026-10-02
+- Sections start their own line with the number first (`**0.Done:**`), not as list items, with one blank line between sections. Without the blank line, Markdown merges a section into the list above it (checked with the GitHub Markdown API); the checker now reports that case.
+
 ## 0.4.0 — 2026-10-02
 - New closing shape, designed with the first user: a one-sentence **Conclusion:** line, then numbered sections in a fixed order: 0.Done, 1.InProgress, 2.Questions, 3.Pending, 4.Backlog. Empty sections are left out; numbers never move.
 - Questions hold everything that needs the user, including approvals ("Approve: ..."). The recommended option is `<a>` in a code span, because a bare `<a>` or `<b>` is an HTML tag that Markdown renderers delete (checked on GitHub); other options are (b), (c).

@@ -34,7 +34,7 @@ NO_SPACE_SCRIPTS = [  # (regex, characters per English-word equivalent); see doc
 EMOJI = re.compile(r"[☀-➿⬀-⯿⌀-⏿\U0001F000-\U0001FAFF️]")
 SENTENCE_END = r"(?<=[.!?。！？؟।])\s*"
 CONCLUSION_LINE = re.compile(r"^\*\*([^*:：\n]{1,30})[:：]\*\*\s*(\S.*)$")
-SECTION_LINE = re.compile(r"^[-*]\s+\*\*(\d)\.\s?([^*:：\n]{1,30})[:：]\*\*\s*(.*)$")
+SECTION_LINE = re.compile(r"^(?:[-*]\s+)?\*\*(\d)\.\s?([^*:：\n]{1,30})[:：]\*\*\s*(.*)$")
 SUB_ITEM = re.compile(r"^\s{2,}[-*]\s+(.*)$")
 RECOMMENDED = "`<a>`"
 OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of course|let me |i'll |i will now|"
@@ -82,15 +82,18 @@ def split_reply(text):
     conclusion = CONCLUSION_LINE.match(lines[index].strip()) if index >= 0 else None
     has_sections = any(SECTION_LINE.match(line.strip()) for line in tail)
     if not conclusion or (any(line.strip() for line in tail) and not has_sections):
-        return text, None, []
-    sections = []
+        return text, None, [], False
+    sections, packed, previous = [], False, lines[index]
     for line in tail:
         match = SECTION_LINE.match(line.strip())
+        if match and not re.match(r"[-*]\s", line.lstrip()) and previous.strip():
+            packed = True  # a bullet-free section line right after another line merges into it when rendered
+        previous = line
         if match:
             sections.append((int(match.group(1)), match.group(2).strip(), match.group(3).strip(), []))
         elif SUB_ITEM.match(line) and sections:
             sections[-1][3].append(line)
-    return "\n".join(lines[:index]), conclusion.group(2).strip(), sections
+    return "\n".join(lines[:index]), conclusion.group(2).strip(), sections, packed
 
 
 def question_problems(sub_items):
@@ -113,7 +116,7 @@ def question_problems(sub_items):
 
 
 def check(text):
-    body, conclusion, sections = split_reply(text)
+    body, conclusion, sections, packed = split_reply(text)
     words = units(strip_code(text))
     violations, warnings = [], []
 
@@ -126,6 +129,8 @@ def check(text):
         numbers = [number for number, _, _, _ in sections]
         if numbers != sorted(set(numbers)) or any(n not in SECTIONS for n in numbers):
             violations.append("Sections must be numbered 0 to 4, in order, each once; found %s." % numbers)
+        if packed:
+            violations.append("Put one blank line before each section; without it the line merges into the one above.")
         for number, label, line, subs in sections:
             if not line and not subs:
                 violations.append("Section %d (%s) is empty; leave it out." % (number, label))
