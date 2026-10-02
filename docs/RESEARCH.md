@@ -92,7 +92,9 @@ The linked [Reddit workflow entry](https://www.reddit.com/r/ClaudeWorkflows/comm
 
 ### Resulting edits to the skill
 
-- Keep the admin-selected section format (six sections at the time of this pass, eight since 0.8.0) and exact-output exceptions. These are product requirements, not deductions from STE or competitor results.
+- Keep the admin-selected eight-section format introduced in 0.8.0 and exact-output exceptions. These are product requirements, not deductions from STE or competitor results.
+- Keep English labels, section digits, structural colons and Q/R/I IDs in ASCII. This supports predictable parsing; ordinary punctuation in multilingual prose stays local to the language.
+- Use the five-item target for routine scan lists, not requested exhaustive findings. Keep every failure and material finding; the many-findings eval checks all nine supplied defects and locations.
 - Make brevity and item counts targets. Do not omit required evidence, and do not create an unrequested file only to keep a reply short.
 - Put the useful result in the first body line. Place the one-sentence Conclusion after the body and before the fixed status list. Call this the “Conclusion after the body” so “last” cannot be read as the final output line.
 - Make the pre-send check conditional on the full format. A one-fact or exact-output reply must not be forced into a footer.

@@ -55,28 +55,33 @@ class SkillTests(unittest.TestCase):
                                                           "5. **Backlog:**", "6. **Risks:**", "7. **AIIdeas:**")]
         self.assertEqual(positions, sorted(positions))
         self.assertIn("`<a>`", self.text)
-        self.assertIn("Keep the labels in English exactly as shown", self.text)
-        self.assertIn("show only its label with no text after it", self.text)
-        self.assertIn("Never write an item on the label line", self.text)
+        self.assertIn("Keep labels exactly as shown in English", self.text)
+        self.assertIn("empty sections show only their label with no text after it", self.text)
+        self.assertIn("Never put text on a section-label line", self.text)
         self.assertIn("starting with a bold key", self.text)
         self.assertIn("An empty Risks label means you checked and found none", self.text)
-        self.assertIn("each risk and idea ends with one choice line", self.text)
-        for rule in ("Open with the direct answer, action or blocker", "Put each item in one section only",
-                     "accepted to Todos, deferred to Backlog", "adds no new fact or evidence list",
-                     "Write status in words, in the user's language",
-                     "Only a format the user or project asks for replaces this shape"):
+        self.assertIn("Each risk and idea ends with one choice line", self.text)
+        self.assertIn("Start approvals with `Approve:`", self.text)
+        self.assertIn("name action and target, and state what cannot be undone", self.text)
+        self.assertIn("Never omit a failure, material finding or requested detail", self.text)
+        self.assertIn("Count passes; list each failure", self.text)
+        for rule in ("Open with the answer or blocker", "Give each item one home",
+                     "Move accepted work to Todos and deferred work to Backlog", "add no new fact or evidence list",
+                     "Body, status and question text follow the user's latest language",
+                     "A user or project format request changes this shape only when higher rules allow it"):
             self.assertIn(rule, self.text)
-        self.assertIn("do not treat syllable spaces as word breaks", self.text)
+        self.assertIn("do not count syllable spaces as words", self.text)
         self.assertIn("Conclusion after the body", self.text)
         self.assertIn("These are targets, not limits", self.text)
         self.assertIn("Do not create a file only to shorten a reply", self.text)
-        self.assertIn("If the full format applies", self.text)
+        self.assertIn("For the full format", self.text)
         self.assertIn('"stop ste mode"', self.text)
 
     def test_fixed_english_labels_do_not_set_the_body_language(self):
         """Labels stay English while the rest of the reply follows the user."""
         body = self.text.split("---", 2)[2]
-        self.assertIn("Keep the labels in English exactly as shown", body)
+        self.assertIn("Keep labels exactly as shown in English", body)
+        self.assertIn("Body, status and question text follow the user's latest language", body)
         self.assertNotRegex(body, r"(?i)write every reply in English")
         self.assertTrue(body.isascii(), sorted({c for c in body if not c.isascii()}))
 

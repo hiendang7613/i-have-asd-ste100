@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4F46E5"></a>
-  <img alt="Version 0.9.0" src="https://img.shields.io/badge/version-0.9.0-4F46E5">
+  <img alt="Version 0.10.0" src="https://img.shields.io/badge/version-0.10.0-4F46E5">
   <img alt="Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-0F172A">
   <img alt="Any language" src="https://img.shields.io/badge/replies-any%20language-F59E0B">
 </p>
@@ -190,7 +190,7 @@ The section numbers are the same in every language, so a script can find section
 
 ## Any language
 
-The reply body follows your language. The eight section labels stay in English and keep the same order. The rules do not change the language of the body.
+The reply body follows your language. The eight labels stay in English and in the same order. Structural digits and colons stay ASCII; prose punctuation follows the language.
 
 | Reply body | Example |
 |---|---|
@@ -213,7 +213,7 @@ The maintainers wrote these examples. Native speakers: [fix or add your language
 | Drift control | Rules at session start | Session start plus one reminder line per prompt |
 | Languages | Rules in English; README in 10 languages | Body follows the user's language; section labels stay in English; examples in 5 languages |
 | Runtimes | Claude Code, Codex, Cursor, Gemini, OpenCode, Pi, Qwen, Kimi | Claude Code, Codex |
-| Offline checker | No | `scripts/check_reply.py`: conclusion, section order, `<a>` markers, any script |
+| Offline checker | No | `scripts/check_reply.py`: ASCII markers, Conclusion and section order, indentation, `<a>` markers, any script |
 | Measured evidence | Blind LLM-judge A/B, 14 cases, 3 trials: weighted 4.045 to 4.473; its own release gate failed (3 blocking findings remained) | 10 eval cases written; not run yet, so no scores are claimed |
 
 Both are MIT. They agree on more than they differ; pick the one that matches your problem.

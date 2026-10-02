@@ -48,7 +48,7 @@ class ShapeTests(unittest.TestCase):
         self.assertFalse(before["ok"])
         self.assertTrue(any("No conclusion part" in v for v in before["violations"]))
 
-    def test_all_six_sections_are_always_shown_and_empty_ones_show_only_the_label(self):
+    def test_all_eight_sections_are_always_shown_and_empty_ones_show_only_the_label(self):
         alone = "I renamed the file.\n\n**Conclusion:** The file is renamed.\n"
         self.assertTrue(any("must be shown" in v for v in check(alone)["violations"]))
         labels = ["Done", "InProgress", "Pending", "Questions", "Todos", "Backlog", "Risks", "AIIdeas"]
@@ -115,7 +115,7 @@ class ShapeTests(unittest.TestCase):
         glued = first.replace("213 pass.\n\n0.", "213 pass.\n0.")
         self.assertNotEqual(glued, first)
         self.assertTrue(any("blank line" in v for v in check(glued)["violations"]))
-        self.assertTrue(any("No conclusion part" in v for v in check(body + "\n\n" + sections)["violations"]))
+        self.assertTrue(any("No valid Conclusion" in v for v in check(body + "\n\n" + sections)["violations"]))
 
     def test_long_body_warning_does_not_ask_for_a_file(self):
         long_body = FULL.replace("- **Tests:** 214 ran and 213 pass.", "- **Tests:** " + "word " * 260 + "end.")
@@ -170,6 +170,51 @@ class ShapeTests(unittest.TestCase):
         long_line = FULL.replace("Login is fixed; one payment test still fails, cause not checked.", " ".join(["word"] * 26) + ".")
         self.assertTrue(any("Conclusion line has 26" in v for v in check(long_line)["violations"]))
 
+    def test_structural_markers_use_ascii_digits_and_colons(self):
+        variants = (
+            FULL.replace("**Conclusion:**", "**Conclusion：**"),
+            FULL.replace("0. **Done:**", "٠. **Done:**"),
+            FULL.replace("**Payment test:**", "**Payment test：**"),
+            FULL.replace("**Q1.**", "**Q١.**"),
+        )
+        for text in variants:
+            with self.subTest(fragment=text.splitlines()[0]):
+                report = check(text)
+                self.assertFalse(report["ok"], report)
+                self.assertTrue(any("ASCII" in violation for violation in report["violations"]), report)
+
+        prose_punctuation = FULL.replace("Login is fixed;", "Login： is fixed;")
+        self.assertTrue(check(prose_punctuation)["ok"], check(prose_punctuation))
+
+    def test_duplicate_conclusion_is_rejected(self):
+        pasted = FULL.replace(
+            "**Conclusion:** Login is fixed;",
+            "**Conclusion:** A pasted peer report says all tests pass.\n\n**Conclusion:** Login is fixed;",
+        )
+        report = check(pasted)
+        self.assertFalse(report["ok"], report)
+        self.assertTrue(any("more than one Conclusion" in violation for violation in report["violations"]), report)
+
+    def test_attempted_section_format_cannot_use_the_small_answer_exception(self):
+        labels = ["Done", "InProgress", "Pending", "Questions", "Todos", "Backlog", "Risks", "AIIdeas"]
+        no_conclusion = "Renamed.\n\n" + "\n".join(
+            "%d. **%s:**" % (number, label) for number, label in enumerate(labels)
+        )
+        report = check(no_conclusion)
+        self.assertFalse(report["ok"], report)
+        self.assertTrue(any("No valid Conclusion" in violation for violation in report["violations"]), report)
+
+    def test_top_level_items_and_choice_lines_use_the_declared_indentation(self):
+        variants = (
+            FULL.replace("   - **Q1.**", "    - **Q1.**"),
+            FULL.replace("     - `<a>` After CI passes.", "    - `<a>` After CI passes."),
+        )
+        for text in variants:
+            with self.subTest(text=text[text.index("**Q1.**") - 8:text.index("**Q1.**") + 30]):
+                report = check(text)
+                self.assertFalse(report["ok"], report)
+                self.assertTrue(any("indent" in violation.lower() for violation in report["violations"]), report)
+
 
 class StyleTests(unittest.TestCase):
     def test_emoji_and_square_brackets_fail_but_code_spans_may_hold_anything(self):
@@ -220,12 +265,14 @@ class MultilingualTests(unittest.TestCase):
                "支付模块的一个测试仍然失败但是它的原因到现在还没有检查过。\n\n**Conclusion：** 完成。\n")
         self.assertEqual(check(two)["warnings"], [])
 
-    def test_fullwidth_colon_labels(self):
+    def test_fullwidth_colons_are_rejected_only_in_structural_markers(self):
         wide = FULL.replace("**Conclusion:**", "**Conclusion：**").replace("**Done:**", "**Done：**").replace("**Login fix:**", "**登录修复：**")
         self.assertNotEqual(wide, FULL)
         report = check(wide)
-        self.assertTrue(report["ok"], report)
-        self.assertEqual(report["stats"]["sections"], list(range(8)))
+        self.assertFalse(report["ok"], report)
+        self.assertTrue(any("ASCII" in violation for violation in report["violations"]), report)
+        prose = FULL.replace("Login is fixed;", "Login： is fixed;")
+        self.assertTrue(check(prose)["ok"], check(prose))
 
 
 if __name__ == "__main__":

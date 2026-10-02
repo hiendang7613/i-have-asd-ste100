@@ -6,12 +6,12 @@ Usage:
   cat reply.md | python3 scripts/check_reply.py -    # read standard input
 
 Exit code 0 when there is no violation, 1 otherwise. Warnings never fail the check.
-The check covers what can be checked mechanically: the conclusion part, exact English labels, section numbers
-and order, label-only section lines with bold-key sub-items, option markers, emoji and square brackets, sentence
-length, openers and closers.
+The check covers what can be checked mechanically: the conclusion part, ASCII structure, exact English labels,
+section order and indentation, bold-key sub-items, option markers, duplicate conclusions, emoji and square brackets,
+sentence length, openers and closers.
 It cannot judge meaning, accuracy or tone; a passing reply can still be wrong.
 
-Any language: the body can use any language. The conclusion and section labels stay in English.
+Any language: body text can use any language. Structural numbers, labels and colons stay in ASCII.
 Length is counted in words for scripts with spaces and in characters (converted to word equivalents)
 for scripts written without spaces.
 """
@@ -37,10 +37,15 @@ NO_SPACE_SCRIPTS = [  # (regex, characters per English-word equivalent); see doc
 ]
 EMOJI = re.compile(r"[☀-➿⬀-⯿⌀-⏿\U0001F000-\U0001FAFF️]")
 SENTENCE_END = r"(?<=[.!?。！？؟।])\s*"
-CONCLUSION_LINE = re.compile(r"^\*\*([^*:：\n]{1,30})[:：]\*\*\s*(\S.*)$")
-SECTION_LINE = re.compile(r"^(\d)\.\s+\*\*([^*:：\n]{1,30})[:：]\*\*\s*(.*)$")
+CONCLUSION_LINE = re.compile(r"^\*\*([^*:\n]{1,30}):\*\*\s*(\S.*)$")
+SECTION_LINE = re.compile(r"^([0-9])\.\s+\*\*([^*:\n]{1,30}):\*\*\s*(.*)$")
+SECTION_CANDIDATE = re.compile(r"(?m)^\d+\.\s+\*\*[^*\n]{1,30}[:：]\*\*")
+MALFORMED_CONCLUSION = re.compile(r"(?m)^\*\*Conclusion：\*\*")
+FULLWIDTH_MARKER_LINE = re.compile(r"(?m)^\s*(?:[-*]\s+)?\*\*[^*\n]{1,40}：\*\*")
 SUB_ITEM = re.compile(r"^\s{2,}[-*]\s+(.*)$")
-BOLD_KEY = re.compile(r"^\*\*[^*\n]{1,40}[:：]\*\*(\s|$)")
+BOLD_KEY = re.compile(r"^\*\*[^*:\n]{1,40}:\*\*(\s|$)")
+OPTION_ITEM = re.compile(r"^(?:`<a>`|\([a-z]\))(?:\s|$)")
+ID_CANDIDATE = re.compile(r"\*\*[QRI]\d+\.\*\*")
 RECOMMENDED = "`<a>`"
 OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of course|let me |i'll |i will now|"
                      r"câu hỏi hay|tuyệt|để tôi |chắc chắn rồi)", re.I)
@@ -114,7 +119,7 @@ def split_reply(text):
 def item_problems(number, sub_items):
     """Each top-level item in a section starts with a bold key; in a decision list the key is its ID: **Q1.**, **R1.**, **I1.**"""
     letter = ID_KEYS.get(number)
-    key = re.compile(r"^\*\*%s\d+\.\*\*\s" % letter) if letter else BOLD_KEY
+    key = re.compile(r"^\*\*%s[0-9]+\.\*\*\s" % letter) if letter else BOLD_KEY
     shown = "**%s1.**" % letter if letter else "**Key:**"
     return ["Section %d item must start with %s: %s..." % (number, shown, item[:30])
             for item in (SUB_ITEM.match(line).group(1) for line in sub_items
@@ -144,6 +149,23 @@ def question_problems(number, sub_items):
     return problems
 
 
+def indentation_problems(number, sub_items):
+    """Require three spaces for keyed section items and five for option markers."""
+    letter = ID_KEYS.get(number)
+    key = re.compile(r"^\*\*%s[0-9]+\.\*\*\s" % letter) if letter else BOLD_KEY
+    problems = []
+    for line in sub_items:
+        indent = len(line) - len(line.lstrip())
+        item = SUB_ITEM.match(line).group(1)
+        if indent < 3 or indent % 2 == 0:
+            problems.append("Section %d list indentation must use 3 spaces, then add 2 per nested level." % number)
+        if key.match(item) and indent != 3:
+            problems.append("Top-level items in section %d must be indented exactly 3 spaces." % number)
+        if OPTION_ITEM.match(item) and indent != 5:
+            problems.append("Options in section %d must be indented exactly 5 spaces." % number)
+    return problems
+
+
 def duplicate_items(sections):
     """An item belongs in one section only; the same bold key in two sections is likely one item listed twice."""
     seen, warnings = {}, []
@@ -168,7 +190,10 @@ def check(text):
     violations, warnings = [], []
 
     if conclusion is None:
-        if words > SMALL_ANSWER_WORDS:
+        outside_code = strip_code(text)
+        if SECTION_CANDIDATE.search(outside_code) or MALFORMED_CONCLUSION.search(outside_code):
+            violations.append("No valid Conclusion part was found for the attempted section format.")
+        elif words > SMALL_ANSWER_WORDS:
             violations.append("No conclusion part at the end of a reply longer than %d words." % SMALL_ANSWER_WORDS)
     else:
         if conclusion_label != "Conclusion":
@@ -189,11 +214,21 @@ def check(text):
                 violations.append("Section %d must show its label only on its line; write each item below it as a "
                                   "sub-item that starts with a bold key." % number)
             violations.extend(item_problems(number, subs))
+            violations.extend(indentation_problems(number, subs))
             if number in ID_KEYS:
                 violations.extend(question_problems(number, subs))
         warnings.extend(duplicate_items(sections))
 
     outside_code = re.sub(r"`[^`]*`", "", strip_code(text))
+    section_candidates = [line for line in strip_code(text).splitlines() if SECTION_CANDIDATE.match(line)]
+    if any(not line.split(".", 1)[0].isascii() for line in section_candidates):
+        violations.append("Section numbers and structural colons must use ASCII.")
+    if FULLWIDTH_MARKER_LINE.search(strip_code(text)):
+        violations.append("Bold structural labels and keys must use an ASCII colon.")
+    if any(not match.group()[2:-2].isascii() for match in ID_CANDIDATE.finditer(outside_code)):
+        violations.append("Q, R and I IDs must use ASCII digits.")
+    if len(re.findall(r"\*\*Conclusion:\*\*", outside_code)) > 1:
+        violations.append("A reply must not contain more than one Conclusion marker.")
     if EMOJI.search(outside_code):
         violations.append("The reply contains emoji; write status in words.")
     if re.search(r"\*\*\[|^[-*]\s+\[[^\]]+\]", outside_code, re.M):

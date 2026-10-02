@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.0 — 2026-10-02
+- Keep every requested review finding and failure visible; the five-item target applies only to ordinary scan lists. The many-findings eval now checks all nine supplied findings and locations.
+- Require ASCII digits and colons in structural markers, three-space section items and five-space options. The checker rejects duplicate Conclusion markers and malformed short replies that attempt the full section format.
+- Clarify approval wording, higher-priority output contracts, exact-output replies with explanations, and peer-report attribution.
+
 ## 0.9.0 — 2026-10-02
 Rule clarifications from the Codex review of 0.8.1; the eight-section format does not change.
 - The body opens with the direct answer, action or blocker. The Conclusion gives the overall state and the decisive caveat; it may restate the core result but adds no new fact or evidence list.
