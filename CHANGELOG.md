@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.2 — 2026-10-02
+- Keep the six section labels in English in every reply language, as specified by the admin's global format.
+- Keep empty sections label-only; do not use `None` as a filler.
+- The offline checker now rejects translated labels and a `None` placeholder. Vietnamese sentence-length guidance no longer treats spaces as word boundaries.
+- Treat reply length and action-count guidance as targets; do not create an unrequested file only to shorten a reply.
+- Clarify that the Conclusion follows the body and precedes the status list. The pre-send check now respects one-fact, short-answer and exact-output exceptions.
+
 ## 0.6.1 — 2026-10-02
 - An empty section shows only its label, with nothing after it (no "None"), as the first user asked. All six sections are still always shown.
 

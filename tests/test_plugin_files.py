@@ -55,14 +55,20 @@ class SkillTests(unittest.TestCase):
                                                           "5. **Backlog:**")]
         self.assertEqual(positions, sorted(positions))
         self.assertIn("`<a>`", self.text)
-        self.assertIn("Write the label words in the user's language", self.text)
+        self.assertIn("Keep the labels in English exactly as shown", self.text)
+        self.assertIn("show only its label with no text after it", self.text)
+        self.assertIn("do not treat syllable spaces as word breaks", self.text)
+        self.assertIn("Conclusion after the body", self.text)
+        self.assertIn("These are targets, not limits", self.text)
+        self.assertIn("Do not create a file only to shorten a reply", self.text)
+        self.assertIn("If the full format applies", self.text)
         self.assertIn('"stop ste mode"', self.text)
 
-    def test_injected_rules_name_no_human_language_and_are_ascii_only(self):
-        """A language named in always-on rules pulls replies into that language; the format uses no emoji."""
+    def test_fixed_english_labels_do_not_set_the_body_language(self):
+        """Labels stay English while the rest of the reply follows the user."""
         body = self.text.split("---", 2)[2]
-        names = r"\b(English|Vietnamese|Chinese|Japanese|Korean|Spanish|French|German|Portuguese|Arabic|Russian|Thai|Hindi)\b"
-        self.assertNotRegex(body, names)
+        self.assertIn("Keep the labels in English exactly as shown", body)
+        self.assertNotRegex(body, r"(?i)write every reply in English")
         self.assertTrue(body.isascii(), sorted({c for c in body if not c.isascii()}))
 
     def test_public_skill_does_not_hard_code_one_users_form_of_address(self):

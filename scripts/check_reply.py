@@ -6,12 +6,11 @@ Usage:
   cat reply.md | python3 scripts/check_reply.py -    # read standard input
 
 Exit code 0 when there is no violation, 1 otherwise. Warnings never fail the check.
-The check covers what can be counted: the conclusion part, section numbers and order, option markers,
-emoji and square brackets, sentence length, openers and closers.
+The check covers what can be checked mechanically: the conclusion part, exact English labels, section numbers
+and order, label-only empty sections, option markers, emoji and square brackets, sentence length, openers and closers.
 It cannot judge meaning, accuracy or tone; a passing reply can still be wrong.
 
-Any language: the conclusion part is found by its structure (a bold "label:" line, a blank line, then a
-numbered list 0 to 5 whose items start with a bold label), so labels in any language work.
+Any language: the body can use any language. The conclusion and section labels stay in English.
 Length is counted in words for scripts with spaces and in characters (converted to word equivalents)
 for scripts written without spaces.
 """
@@ -70,7 +69,7 @@ def sentences(text):
 
 
 def split_reply(text):
-    """Return (body, conclusion_text_or_None, sections, layout_problems). sections is a list of
+    """Return (body, conclusion_label, conclusion_text, sections, layout_problems). sections is a list of
     (number, label, text, sub_items). The conclusion part is the last bold-label line, one blank line,
     then a numbered list whose items start with a bold label."""
     lines = text.rstrip().splitlines()
@@ -83,7 +82,7 @@ def split_reply(text):
     conclusion = CONCLUSION_LINE.match(lines[index].strip()) if index >= 0 else None
     has_sections = any(SECTION_LINE.match(line) for line in tail)
     if not conclusion or (any(line.strip() for line in tail) and not has_sections):
-        return text, None, [], []
+        return text, None, None, [], []
     problems = []
     if not tail or tail[0].strip():
         problems.append("Put one blank line between the Conclusion line and the list, or the list merges into it.")
@@ -98,7 +97,7 @@ def split_reply(text):
             sections.append((int(match.group(1)), match.group(2).strip(), match.group(3).strip(), []))
         elif SUB_ITEM.match(line) and sections:
             sections[-1][3].append(line)
-    return "\n".join(lines[:index]), conclusion.group(2).strip(), sections, problems
+    return "\n".join(lines[:index]), conclusion.group(1).strip(), conclusion.group(2).strip(), sections, problems
 
 
 def question_problems(sub_items):
@@ -121,7 +120,7 @@ def question_problems(sub_items):
 
 
 def check(text):
-    body, conclusion, sections, layout = split_reply(text)
+    body, conclusion_label, conclusion, sections, layout = split_reply(text)
     words = units(strip_code(text))
     violations, warnings = [], []
 
@@ -129,6 +128,8 @@ def check(text):
         if words > SMALL_ANSWER_WORDS:
             violations.append("No conclusion part at the end of a reply longer than %d words." % SMALL_ANSWER_WORDS)
     else:
+        if conclusion_label != "Conclusion":
+            violations.append("The conclusion label must be exactly 'Conclusion'; found '%s'." % conclusion_label)
         if units(conclusion) > MAX_CONCLUSION_WORDS:
             violations.append("The Conclusion line has %g words (limit %d)." % (units(conclusion), MAX_CONCLUSION_WORDS))
         numbers = [number for number, _, _, _ in sections]
@@ -139,6 +140,10 @@ def check(text):
             violations.append("Sections must be numbered 0 to 5, in order, each once; found %s." % numbers)
         violations.extend(layout)
         for number, label, line, subs in sections:
+            if number in SECTIONS and label != SECTIONS[number]:
+                violations.append("Section %d label must be '%s'; found '%s'." % (number, SECTIONS[number], label))
+            if not subs and line.strip().casefold() == "none":
+                violations.append("Empty section %d must show its label only; remove 'None'." % number)
             if number == 2:
                 violations.extend(question_problems(subs))
 

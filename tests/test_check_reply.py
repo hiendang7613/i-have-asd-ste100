@@ -49,6 +49,8 @@ class ShapeTests(unittest.TestCase):
         empty = FULL.replace("1. **InProgress:** CI reruns the full suite.", "1. **InProgress:**")
         self.assertNotEqual(empty, FULL)
         self.assertTrue(check(empty)["ok"], check(empty))
+        filler = empty.replace("1. **InProgress:**", "1. **InProgress:** None")
+        self.assertTrue(any("show its label only" in v for v in check(filler)["violations"]))
 
     def test_small_answers_need_nothing(self):
         self.assertTrue(check("102.")["ok"])
@@ -113,20 +115,22 @@ class StyleTests(unittest.TestCase):
 
 
 class MultilingualTests(unittest.TestCase):
-    def test_labels_in_any_language_are_found_by_structure(self):
+    def test_body_can_be_multilingual_but_labels_stay_english(self):
         swahili = ("- **Kurekebisha:** Kuingia kumerekebishwa.\n\n**Hitimisho:** Jaribio moja la malipo bado linashindwa.\n\n"
                    "0. **Imekamilika:** Kuingia kumerekebishwa.\n1. **Inaendelea:**\n2. **Maswali:**\n"
                    "   - **Q1.** Niangalie sasa?\n     - `<a>` Ndiyo.\n     - (b) Baadaye.\n"
                    "3. **Kazi zijazo:**\n4. **Inasubiri:**\n5. **Yaliyobaki:** Kusasisha jsonwebtoken.\n")
         report = check(swahili)
-        self.assertTrue(report["ok"], report)
+        self.assertFalse(report["ok"], report)
+        self.assertTrue(any("conclusion label must be exactly" in v for v in report["violations"]))
+        self.assertTrue(any("Section 0 label must be" in v for v in report["violations"]))
         self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
 
     def test_length_counts_characters_in_scripts_without_spaces(self):
-        long_ja = "- **説明：** " + "これはとても長い説明の文で" * 6 + "す。\n\n**結論：** 完了しました。\n"
+        long_ja = "- **説明：** " + "これはとても長い説明の文で" * 6 + "す。\n\n**Conclusion：** 完了しました。\n"
         self.assertTrue(any(w.startswith("Long sentence") for w in check(long_ja)["warnings"]))
         two = ("- **测试：** 测试已经在预发布环境中全部运行完毕并且全部通过了没有问题。"
-               "支付模块的一个测试仍然失败但是它的原因到现在还没有检查过。\n\n**结论：** 完成。\n")
+               "支付模块的一个测试仍然失败但是它的原因到现在还没有检查过。\n\n**Conclusion：** 完成。\n")
         self.assertEqual(check(two)["warnings"], [])
 
     def test_fullwidth_colon_labels(self):

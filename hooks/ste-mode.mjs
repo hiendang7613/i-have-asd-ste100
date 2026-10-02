@@ -21,8 +21,8 @@ const OFF_ANYWHERE = /\bstop ste mode\b/;
 const ON_ANYWHERE = /\b(?:start ste mode|ste mode on)\b/;
 export const REMINDER =
   "[i-have-asd-ste100] Reply shape: key-first bullets; then **Conclusion:** in one sentence, a blank line, and all six " +
-  "sections as a list from 0, no blank lines between: 0. Done, 1. InProgress, 2. Questions, 3. Todos, 4. Pending, 5. Backlog (empty: label only). " +
-  'Recommended option as `<a>`. No emoji or square brackets. Only for text a person reads. "stop ste mode" turns this off.';
+  "sections as a list from 0, no blank lines between: 0. **Done:**, 1. **InProgress:**, 2. **Questions:**, 3. **Todos:**, 4. **Pending:**, 5. **Backlog:** (empty: label only). " +
+  'Recommended option as `<a>`. No emoji or square brackets. "stop ste mode" turns this off.';
 
 const ENV_SWITCHES = ["I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"];
 
@@ -45,6 +45,7 @@ function readInput() {
 }
 
 function configDir() {
+  if (process.env.PLUGIN_ROOT) return process.env.CODEX_HOME || path.join(os.homedir(), ".codex");
   return process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), ".claude");
 }
 
@@ -58,7 +59,8 @@ function unquoted(prompt) {
   return prompt
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`]*`/g, " ")
-    .replace(/"[^"]*"|“[^”]*”/g, " ");
+    .replace(/"[^\"]*"|“[^”]*”/g, " ")
+    .replace(/(?<![\p{L}\p{N}_'])'[^'\r\n]*'(?![\p{L}\p{N}_'])|‘[^’\r\n]*’/gu, " ");
 }
 
 function skillBody() {

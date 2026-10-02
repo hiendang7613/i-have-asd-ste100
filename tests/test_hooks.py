@@ -24,10 +24,10 @@ class HookTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def run_hook(self, payload, command=LAUNCH, **env):
+    def run_hook(self, payload, command=LAUNCH, environment=None, **env):
         text = payload if isinstance(payload, str) else json.dumps(payload)
         result = subprocess.run(["sh", "-c", command], input=text, capture_output=True, text=True,
-                                env=self.env | env, timeout=30)
+                                env=self.env | (environment or {}) | env, timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
         return result.stdout
 
@@ -73,7 +73,7 @@ class HookTests(unittest.TestCase):
         out = self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "fix the bug"})
         self.assertEqual(out.count("\n"), 1)
         self.assertLess(len(out.encode()), 400)
-        self.assertIn("0. Done, 1. InProgress, 2. Questions, 3. Todos, 4. Pending, 5. Backlog", out)
+        self.assertIn("0. **Done:**, 1. **InProgress:**, 2. **Questions:**, 3. **Todos:**, 4. **Pending:**, 5. **Backlog:**", out)
         self.assertTrue(out.isascii())
 
     def test_stop_and_restart_work_per_session(self):
@@ -100,10 +100,25 @@ class HookTests(unittest.TestCase):
         self.assertIn("off for this session", prompt("c", "Stop STE mode and fix the login test"))
         self.assertEqual(prompt("c", "next"), "")
         self.assertIn("Reply shape", prompt("c", "ok, start ste mode again please"))
-        for quoted in ('the docs say "stop ste mode" turns it off', "run `stop ste mode` later",
+        for quoted in ('the docs say "stop ste mode" turns it off', "the docs say 'stop ste mode' turns it off",
+                       "the docs say ‘stop ste mode’ turns it off", "run `stop ste mode` later",
                        "```\nstop ste mode\n```"):
             with self.subTest(quoted=quoted):
                 self.assertIn("Reply shape", prompt("d", quoted))
+
+    def test_codex_root_and_session_marker_use_codex_home(self):
+        environment = self.env.copy()
+        environment.pop("CLAUDE_CONFIG_DIR")
+        environment.pop("CLAUDE_PLUGIN_ROOT")
+        environment["PLUGIN_ROOT"] = str(ROOT)
+
+        start = {"hook_event_name": "SessionStart", "session_id": "codex-session"}
+        self.assertIn("STE REPLY MODE ACTIVE", self.run_hook(start, environment=environment))
+        stop = {"hook_event_name": "UserPromptSubmit", "session_id": "codex-session", "prompt": "stop ste mode"}
+        self.assertIn("off for this session", self.run_hook(stop, environment=environment))
+        marker = self.home / ".codex/.i-have-asd-ste100-sessions/codex-session.off"
+        self.assertTrue(marker.is_file())
+        self.assertEqual(self.run_hook({**stop, "prompt": "next"}, environment=environment), "")
 
     def test_bad_input_and_missing_root_never_fail(self):
         self.opt_in()
