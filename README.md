@@ -264,7 +264,7 @@ The research behind each rule, with sources and strength ratings, is in [docs/RE
 
 [Agent Room](https://github.com/hiendang7613/agent-room-plugin) runs a small team of Claude Code and Codex agents in your project:
 shared tasks, peer review and recovery after a crash. One agent talks to you; the others report through it.
-Installing Agent Room installs i-have-asd-ste100 too, so every report from the room has the same shape.
+In Claude Code, installing Agent Room also installs i-have-asd-ste100 through its plugin dependency. In Codex, install i-have-asd-ste100 separately; see [INSTALL.md](INSTALL.md).
 
 ## Contributing and license
 
