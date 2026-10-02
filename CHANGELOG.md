@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.1 — 2026-10-02
+- An empty section shows only its label, with nothing after it (no "None"), as the first user asked. All six sections are still always shown.
+
 ## 0.6.0 — 2026-10-02
 - All six sections are always shown (None when empty), written as one numbered list from 0 to 5 with no blank lines between sections, as the first user asked.
 - One blank line separates the list from the Conclusion line: a list that starts at 0 cannot interrupt a paragraph, so without it item 0 merges into the Conclusion (checked with the GitHub Markdown API).

@@ -30,7 +30,7 @@ These rules apply to every reply for the rest of the session, in every language.
    5. **Backlog:** work deferred to later or optional, outside the current task.
    ```
 
-   Show all six; write "None" in the user's language when one is empty. Write the label words in the user's language, identical in the session. Indent sub-items by three spaces. In Questions, write `**Q1.**`, start an approval with "Approve:", and give options as deeper sub-items: the recommended one as `<a>` in a code span, the others as (b), (c).
+   Show all six; leave an empty one with nothing after its label. Write the label words in the user's language, identical in the session. Indent sub-items by three spaces. In Questions, write `**Q1.**`, start an approval with "Approve:", and give options as deeper sub-items: the recommended one as `<a>` in a code span, the others as (b), (c).
 3. **The conclusion part stands alone.** Name the thing, never "see above". Do not repeat the body in it.
 4. **Small answers stay small.** A one-fact answer or a yes/no is one or two sentences, with no conclusion part.
 5. **Exact output wins.** When the user asks for only code, JSON, one command, a commit message or a file, give exactly that.

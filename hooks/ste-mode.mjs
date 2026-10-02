@@ -21,7 +21,7 @@ const OFF_ANYWHERE = /\bstop ste mode\b/;
 const ON_ANYWHERE = /\b(?:start ste mode|ste mode on)\b/;
 export const REMINDER =
   "[i-have-asd-ste100] Reply shape: key-first bullets; then **Conclusion:** in one sentence, a blank line, and all six " +
-  "sections as a list from 0, no blank lines between: 0. Done, 1. InProgress, 2. Questions, 3. Todos, 4. Pending, 5. Backlog (None if empty). " +
+  "sections as a list from 0, no blank lines between: 0. Done, 1. InProgress, 2. Questions, 3. Todos, 4. Pending, 5. Backlog (empty: label only). " +
   'Recommended option as `<a>`. No emoji or square brackets. Only for text a person reads. "stop ste mode" turns this off.';
 
 const ENV_SWITCHES = ["I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"];

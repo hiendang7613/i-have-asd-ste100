@@ -37,17 +37,18 @@ class ShapeTests(unittest.TestCase):
         self.assertFalse(before["ok"])
         self.assertTrue(any("No conclusion part" in v for v in before["violations"]))
 
-    def test_all_six_sections_are_always_shown_with_none_when_empty(self):
+    def test_all_six_sections_are_always_shown_and_empty_ones_show_only_the_label(self):
         alone = "I renamed the file.\n\n**Conclusion:** The file is renamed.\n"
         self.assertTrue(any("must be shown" in v for v in check(alone)["violations"]))
-        minimal = alone + "\n" + "\n".join("%d. **%s:** None." % (n, label) for n, label in
-                                           enumerate(["Done", "InProgress", "Questions", "Todos", "Pending", "Backlog"])) + "\n"
+        labels = ["Done", "InProgress", "Questions", "Todos", "Pending", "Backlog"]
+        minimal = alone + "\n" + "\n".join("%d. **%s:**" % (n, label) for n, label in enumerate(labels)) + "\n"
         self.assertTrue(check(minimal)["ok"], check(minimal))
         no_pending = FULL.replace("4. **Pending:** Review from the other agent.\n", "")
         self.assertNotEqual(no_pending, FULL)
         self.assertTrue(any("4 must be shown" in v for v in check(no_pending)["violations"]))
         empty = FULL.replace("1. **InProgress:** CI reruns the full suite.", "1. **InProgress:**")
-        self.assertTrue(any("Section 1" in v and "write None" in v for v in check(empty)["violations"]))
+        self.assertNotEqual(empty, FULL)
+        self.assertTrue(check(empty)["ok"], check(empty))
 
     def test_small_answers_need_nothing(self):
         self.assertTrue(check("102.")["ok"])
@@ -114,9 +115,9 @@ class StyleTests(unittest.TestCase):
 class MultilingualTests(unittest.TestCase):
     def test_labels_in_any_language_are_found_by_structure(self):
         swahili = ("- **Kurekebisha:** Kuingia kumerekebishwa.\n\n**Hitimisho:** Jaribio moja la malipo bado linashindwa.\n\n"
-                   "0. **Imekamilika:** Kuingia kumerekebishwa.\n1. **Inaendelea:** Hakuna.\n2. **Maswali:**\n"
+                   "0. **Imekamilika:** Kuingia kumerekebishwa.\n1. **Inaendelea:**\n2. **Maswali:**\n"
                    "   - **Q1.** Niangalie sasa?\n     - `<a>` Ndiyo.\n     - (b) Baadaye.\n"
-                   "3. **Kazi zijazo:** Hakuna.\n4. **Inasubiri:** Hakuna.\n5. **Yaliyobaki:** Kusasisha jsonwebtoken.\n")
+                   "3. **Kazi zijazo:**\n4. **Inasubiri:**\n5. **Yaliyobaki:** Kusasisha jsonwebtoken.\n")
         report = check(swahili)
         self.assertTrue(report["ok"], report)
         self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
