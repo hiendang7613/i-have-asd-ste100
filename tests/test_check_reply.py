@@ -24,7 +24,13 @@ FULL = """- **Fix:** `verifyToken` now reads the `Authorization` header.
 4. **Todos:**
    - **Payment test:** check `payment.spec.ts:88`.
 5. **Backlog:**
-   - **jsonwebtoken:** update it in a separate change.
+   - **Docs:** update the login guide later.
+6. **Risks:**
+   - **R1.** `jsonwebtoken` 8.5.1 is older than the 9.0.0 security release.
+     - `<a>` update it in a separate change | (b) skip | (c) later
+7. **AIIdeas:**
+   - **I1.** Add a test for the `Authorization` header.
+     - `<a>` plan it | (b) skip | (c) later
 """
 
 
@@ -32,7 +38,7 @@ class ShapeTests(unittest.TestCase):
     def test_full_shape_passes(self):
         report = check(FULL)
         self.assertTrue(report["ok"], report)
-        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
+        self.assertEqual(report["stats"]["sections"], list(range(8)))
 
     def test_shipped_examples_pass_and_the_old_style_fails(self):
         for name in ("after-en.md", "after-vi.md", "after-zh.md", "after-ja.md", "after-es.md", "compare/3-i-have-asd-ste100.md"):
@@ -45,7 +51,7 @@ class ShapeTests(unittest.TestCase):
     def test_all_six_sections_are_always_shown_and_empty_ones_show_only_the_label(self):
         alone = "I renamed the file.\n\n**Conclusion:** The file is renamed.\n"
         self.assertTrue(any("must be shown" in v for v in check(alone)["violations"]))
-        labels = ["Done", "InProgress", "Pending", "Questions", "Todos", "Backlog"]
+        labels = ["Done", "InProgress", "Pending", "Questions", "Todos", "Backlog", "Risks", "AIIdeas"]
         minimal = alone + "\n" + "\n".join("%d. **%s:**" % (n, label) for n, label in enumerate(labels)) + "\n"
         self.assertTrue(check(minimal)["ok"], check(minimal))
         no_pending = FULL.replace("2. **Pending:**\n   - **Review:** waiting for the other agent.\n", "")
@@ -79,7 +85,7 @@ class ShapeTests(unittest.TestCase):
         swapped = FULL.replace("3. **Questions:**", "9. **Questions:**").replace("2. **Pending:**", "3. **Pending:**").replace("9. **Questions:**", "2. **Questions:**")
         self.assertNotEqual(swapped, FULL)
         self.assertFalse(check(swapped)["ok"])
-        self.assertFalse(check(FULL.replace("5. **Backlog:**", "6. **Backlog:**"))["ok"])
+        self.assertFalse(check(FULL.replace("7. **AIIdeas:**", "8. **AIIdeas:**"))["ok"])
         self.assertFalse(check(FULL.replace("1. **InProgress:**", "0. **InProgress:**"))["ok"])
 
     def test_one_blank_line_after_the_conclusion_and_none_between_sections(self):
@@ -104,7 +110,7 @@ class ShapeTests(unittest.TestCase):
         first = "**Conclusion:**" + line + "\n\n" + body + "\n\n" + sections
         report = check(first)
         self.assertTrue(report["ok"], report)
-        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
+        self.assertEqual(report["stats"]["sections"], list(range(8)))
         self.assertEqual(report["stats"]["body_words"], check(FULL)["stats"]["body_words"])
         glued = first.replace("213 pass.\n\n0.", "213 pass.\n0.")
         self.assertNotEqual(glued, first)
@@ -116,6 +122,37 @@ class ShapeTests(unittest.TestCase):
         warnings = check(long_body)["warnings"]
         self.assertTrue(any(w.startswith("Body has") for w in warnings), warnings)
         self.assertFalse(any("file" in w for w in warnings), warnings)
+
+    def test_risks_and_ideas_are_numbered_and_offer_one_line_choices(self):
+        for letter, section in (("R", 6), ("I", 7)):
+            with self.subTest(letter=letter):
+                wrong = FULL.replace("   - **%s1.**" % letter, "   - **Item:**")
+                self.assertNotEqual(wrong, FULL)
+                self.assertTrue(any("Section %d item must start with **%s1.**" % (section, letter) in v
+                                    for v in check(wrong)["violations"]))
+        for line in ("     - `<a>` plan it | (b) skip | (c) later\n", "     - `<a>` update it in a separate change | (b) skip | (c) later\n"):
+            with self.subTest(removed=line[9:20]):
+                no_choice = FULL.replace(line, "")
+                self.assertNotEqual(no_choice, FULL)
+                self.assertTrue(any("needs a choice line" in v for v in check(no_choice)["violations"]))
+        single = FULL.replace("`<a>` plan it | (b) skip | (c) later", "`<a>` plan it")
+        self.assertNotEqual(single, FULL)
+        self.assertTrue(any("needs a choice line" in v for v in check(single)["violations"]))
+        unmarked = FULL.replace("`<a>` plan it | (b) skip", "(a) plan it | (b) skip")
+        self.assertNotEqual(unmarked, FULL)
+        self.assertTrue(any("0 options marked" in v for v in check(unmarked)["violations"]))
+        twice = FULL.replace("| (b) skip | (c) later\n7.", "| `<a>` skip | (c) later\n7.")
+        self.assertNotEqual(twice, FULL)
+        self.assertTrue(any("2 options marked" in v for v in check(twice)["violations"]))
+        nested = FULL.replace("     - `<a>` plan it | (b) skip | (c) later", "     - `<a>` plan it\n     - (b) skip")
+        self.assertNotEqual(nested, FULL)
+        self.assertTrue(check(nested)["ok"], check(nested))
+        one_line_question = FULL.replace("     - `<a>` After CI passes.\n     - (b) Now.", "     - `<a>` after CI passes | (b) now")
+        self.assertNotEqual(one_line_question, FULL)
+        self.assertTrue(check(one_line_question)["ok"], check(one_line_question))
+        open_question = FULL.replace("     - `<a>` After CI passes.\n     - (b) Now.\n", "")
+        self.assertNotEqual(open_question, FULL)
+        self.assertTrue(check(open_question)["ok"], check(open_question))
 
     def test_conclusion_line_length(self):
         long_line = FULL.replace("Login is fixed; one payment test still fails, cause not checked.", " ".join(["word"] * 26) + ".")
@@ -157,12 +194,12 @@ class MultilingualTests(unittest.TestCase):
         swahili = ("- **Kurekebisha:** Kuingia kumerekebishwa.\n\n**Hitimisho:** Jaribio moja la malipo bado linashindwa.\n\n"
                    "0. **Imekamilika:**\n   - **Kuingia:** kumerekebishwa.\n1. **Inaendelea:**\n2. **Inasubiri:**\n3. **Maswali:**\n"
                    "   - **Q1.** Niangalie sasa?\n     - `<a>` Ndiyo.\n     - (b) Baadaye.\n"
-                   "4. **Kazi zijazo:**\n5. **Yaliyobaki:**\n   - **jsonwebtoken:** kusasisha.\n")
+                   "4. **Kazi zijazo:**\n5. **Yaliyobaki:**\n   - **jsonwebtoken:** kusasisha.\n6. **Hatari:**\n7. **Mawazo:**\n")
         report = check(swahili)
         self.assertFalse(report["ok"], report)
         self.assertTrue(any("conclusion label must be exactly" in v for v in report["violations"]))
         self.assertTrue(any("Section 0 label must be" in v for v in report["violations"]))
-        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
+        self.assertEqual(report["stats"]["sections"], list(range(8)))
 
     def test_length_counts_characters_in_scripts_without_spaces(self):
         long_ja = "- **説明：** " + "これはとても長い説明の文で" * 6 + "す。\n\n**Conclusion：** 完了しました。\n"
@@ -176,7 +213,7 @@ class MultilingualTests(unittest.TestCase):
         self.assertNotEqual(wide, FULL)
         report = check(wide)
         self.assertTrue(report["ok"], report)
-        self.assertEqual(report["stats"]["sections"], [0, 1, 2, 3, 4, 5])
+        self.assertEqual(report["stats"]["sections"], list(range(8)))
 
 
 if __name__ == "__main__":

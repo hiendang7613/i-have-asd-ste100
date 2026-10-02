@@ -73,7 +73,8 @@ class HookTests(unittest.TestCase):
         out = self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "fix the bug"})
         self.assertEqual(out.count("\n"), 1)
         self.assertLess(len(out.encode()), 400)
-        self.assertIn("0. **Done:**, 1. **InProgress:**, 2. **Pending:**, 3. **Questions:**, 4. **Todos:**, 5. **Backlog:**", out)
+        self.assertIn("0. **Done:**, 1. **InProgress:**, 2. **Pending:**, 3. **Questions:**, 4. **Todos:**, 5. **Backlog:**, "
+                      "6. **Risks:**, 7. **AIIdeas:**", out)
         self.assertIn("items are sub-items with a bold key", out)
         self.assertTrue(out.isascii())
 

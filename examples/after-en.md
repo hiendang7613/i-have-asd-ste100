@@ -14,4 +14,9 @@
 4. **Todos:**
    - **Payment test:** find why `payment.spec.ts:88` fails; I did not change payment code.
 5. **Backlog:**
-   - **jsonwebtoken:** 8.5.1 is old; update it in a separate change.
+6. **Risks:**
+   - **R1.** `jsonwebtoken` 8.5.1 is older than the 9.0.0 security release.
+     - `<a>` update it in a separate change | (b) skip | (c) later
+7. **AIIdeas:**
+   - **I1.** Add a test that sends `Authorization: Bearer <token>`, so this bug cannot come back.
+     - `<a>` plan it | (b) skip | (c) later

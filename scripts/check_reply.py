@@ -20,9 +20,11 @@ import json
 import re
 import sys
 
-SECTIONS = {0: "Done", 1: "InProgress", 2: "Pending", 3: "Questions", 4: "Todos", 5: "Backlog"}
-QUESTIONS = 3
-ALWAYS_SHOWN = (0, 1, 2, 3, 4, 5)  # every section is shown; an empty one shows only its label
+SECTIONS = {0: "Done", 1: "InProgress", 2: "Pending", 3: "Questions", 4: "Todos", 5: "Backlog", 6: "Risks", 7: "AIIdeas"}
+QUESTIONS, RISKS, IDEAS = 3, 6, 7
+ID_KEYS = {QUESTIONS: "Q", RISKS: "R", IDEAS: "I"}  # decision lists: items are numbered **Q1.**, **R1.**, **I1.**
+MUST_CHOOSE = (RISKS, IDEAS)  # every risk and idea offers a choice
+ALWAYS_SHOWN = tuple(SECTIONS)  # every section is shown; an empty one shows only its label
 MAX_CONCLUSION_WORDS = 25
 MAX_SENTENCE_WORDS = 25
 BODY_WORD_BUDGET = 250
@@ -39,7 +41,6 @@ CONCLUSION_LINE = re.compile(r"^\*\*([^*:：\n]{1,30})[:：]\*\*\s*(\S.*)$")
 SECTION_LINE = re.compile(r"^(\d)\.\s+\*\*([^*:：\n]{1,30})[:：]\*\*\s*(.*)$")
 SUB_ITEM = re.compile(r"^\s{2,}[-*]\s+(.*)$")
 BOLD_KEY = re.compile(r"^\*\*[^*\n]{1,40}[:：]\*\*(\s|$)")
-QUESTION_KEY = re.compile(r"^\*\*Q\d+\.\*\*\s")
 RECOMMENDED = "`<a>`"
 OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of course|let me |i'll |i will now|"
                      r"câu hỏi hay|tuyệt|để tôi |chắc chắn rồi)", re.I)
@@ -111,16 +112,18 @@ def split_reply(text):
 
 
 def item_problems(number, sub_items):
-    """Each top-level item in a section starts with a bold key; in Questions the key is **Q1.**, **Q2.** and so on."""
-    key = QUESTION_KEY if number == QUESTIONS else BOLD_KEY
-    shown = "**Q1.**" if number == QUESTIONS else "**Key:**"
+    """Each top-level item in a section starts with a bold key; in a decision list the key is its ID: **Q1.**, **R1.**, **I1.**"""
+    letter = ID_KEYS.get(number)
+    key = re.compile(r"^\*\*%s\d+\.\*\*\s" % letter) if letter else BOLD_KEY
+    shown = "**%s1.**" % letter if letter else "**Key:**"
     return ["Section %d item must start with %s: %s..." % (number, shown, item[:30])
             for item in (SUB_ITEM.match(line).group(1) for line in sub_items
                          if len(line) - len(line.lstrip()) <= 3) if not key.match(item)]
 
 
-def question_problems(sub_items):
-    """Each question with two or more options needs exactly one recommended option."""
+def question_problems(number, sub_items):
+    """Each decision item with two or more options needs exactly one recommended option. Options are deeper
+    sub-items, or one sub-item that lists them with " | ". Risks and ideas must offer a choice."""
     problems = []
     groups = []
     for line in sub_items:
@@ -131,8 +134,11 @@ def question_problems(sub_items):
         elif groups:
             groups[-1][1].append(item)
     for question, options in groups:
-        if len(options) >= 2:
-            marked = sum(RECOMMENDED in option for option in options)
+        choices = [part for option in options for part in option.split(" | ")]
+        if number in MUST_CHOOSE and len(choices) < 2:
+            problems.append("Item '%s' needs a choice line: `<a>` ... | (b) ... | (c) ..." % question[:30])
+        if len(choices) >= 2:
+            marked = sum(RECOMMENDED in choice for choice in choices)
             if marked != 1:
                 problems.append("Question '%s' has %d options marked `<a>` (need exactly 1)." % (question[:30], marked))
     return problems
@@ -156,7 +162,7 @@ def check(text):
         if missing:
             violations.append("Sections %s must be shown; an empty one shows only its label." % ", ".join(str(n) for n in missing))
         if numbers != sorted(set(numbers)) or any(n not in SECTIONS for n in numbers):
-            violations.append("Sections must be numbered 0 to 5, in order, each once; found %s." % numbers)
+            violations.append("Sections must be numbered 0 to 7, in order, each once; found %s." % numbers)
         violations.extend(layout)
         for number, label, line, subs in sections:
             if number in SECTIONS and label != SECTIONS[number]:
@@ -165,8 +171,8 @@ def check(text):
                 violations.append("Section %d must show its label only on its line; write each item below it as a "
                                   "sub-item that starts with a bold key." % number)
             violations.extend(item_problems(number, subs))
-            if number == QUESTIONS:
-                violations.extend(question_problems(subs))
+            if number in ID_KEYS:
+                violations.extend(question_problems(number, subs))
 
     outside_code = re.sub(r"`[^`]*`", "", strip_code(text))
     if EMOJI.search(outside_code):

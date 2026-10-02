@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0 — 2026-10-02
+- Two new sections, chosen by the first user: 6. Risks and 7. AIIdeas. The list is now 0. Done, 1. InProgress, 2. Pending, 3. Questions, 4. Todos, 5. Backlog, 6. Risks, 7. AIIdeas.
+- Risks and ideas are numbered **R1.** and **I1.** and end with one choice line, such as `` `<a>` fix it now | (b) skip | (c) later ``, so the reader answers "R1 c" in one line. An empty Risks label means the agent checked and found none.
+- Questions now holds approvals, choices and steps only the user can do. Work the agent may do without asking goes to Todos.
+- The checker knows the eight sections, the Q, R and I numbering, one-line choices, and that every risk and idea offers a choice.
+- The skill drops text that repeated other rules, to stay under its size limit.
+
 ## 0.7.1 — 2026-10-02
 - The checker reads a reply whose Conclusion line comes first, as the skill allows on request; the six sections still end it. Found by the Codex review.
 - The long-body warning no longer asks for a file; it says to trim optional detail and keep every needed fact, as the skill says.

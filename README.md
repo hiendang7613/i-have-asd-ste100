@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4F46E5"></a>
-  <img alt="Version 0.7.1" src="https://img.shields.io/badge/version-0.7.1-4F46E5">
+  <img alt="Version 0.8.0" src="https://img.shields.io/badge/version-0.8.0-4F46E5">
   <img alt="Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-0F172A">
   <img alt="Any language" src="https://img.shields.io/badge/replies-any%20language-F59E0B">
 </p>
@@ -32,7 +32,7 @@
 
 Coding agents bury the one thing you need: what failed, what needs your OK, what is still running.
 This plugin gives every reply the same shape. Facts come first, one per line.
-A one-sentence conclusion and six numbered sections close the reply. Your eye learns where to look.
+A one-sentence conclusion and eight numbered sections close the reply. Your eye learns where to look.
 
 <a name="install"></a>
 
@@ -79,7 +79,13 @@ Every reply that has more than one fact ends like this:
 4. **Todos:**
    - **Payment test:** check `payment.spec.ts:88`.
 5. **Backlog:**
-   - **jsonwebtoken:** update it in a separate change.
+   - **Docs:** update the login guide later.
+6. **Risks:**
+   - **R1.** `jsonwebtoken` 8.5.1 is older than the 9.0.0 security release.
+     - `<a>` update it in a separate change | (b) skip | (c) later
+7. **AIIdeas:**
+   - **I1.** Add a test for the `Authorization` header.
+     - `<a>` plan it | (b) skip | (c) later
 
 | Part | What it holds | Who acts |
 |---|---|---|
@@ -90,8 +96,10 @@ Every reply that has more than one fact ends like this:
 | `3. **Questions:**` | Everything that needs you: choices, and approvals that start with "Approve:" | You |
 | `4. **Todos:**` | Work in the current task the agent does next, in order | The agent, next |
 | `5. **Backlog:**` | Work deferred to later or optional, outside the current task | The agent, later |
+| `6. **Risks:**` | Risks you should know, each **R1.** with a choice: fix, skip or later. Empty means the agent checked and found none | You |
+| `7. **AIIdeas:**` | Ideas the agent proposes, each **I1.** with a choice: plan, skip or later | You |
 
-- **All six sections, always, as one list from 0 to 5.** An empty one shows only its label, so you always see whether anything runs, waits or comes next. One blank line separates the list from the Conclusion line; none separates the sections. You can answer "Q1 a".
+- **All eight sections, always, as one list from 0 to 7.** An empty one shows only its label, so you always see whether anything runs, waits or comes next. One blank line separates the list from the Conclusion line; none separates the sections. You can answer "Q1 a, R1 c, I1 b" in one line.
 - **The recommended option** is written as `<a>` in code; the other options are (b), (c). You answer with one letter.
 - **Small answers stay small:** one fact, one sentence. Code-only, JSON-only and one-command requests get exactly that.
 - **Items:** each one is a sub-item under its label that starts with a bold key, such as `   - **Login fix:** merged.` The label line itself stays bare.
@@ -121,7 +129,7 @@ Task: *"The login test fails for the new client. Fix it and tell me where we are
 
 | | Default agent | [i-have-adhd](https://github.com/ayghri/i-have-adhd) | i-have-asd-ste100 |
 |---|---|---|---|
-| Words (markup not counted) | 166 | 82 | 91 |
+| Words (markup not counted) | 166 | 82 | 104 |
 | Longest sentence | 57 words | 18 words | 15 words |
 | Where the approval is | Mid-paragraph | First and last line ("Next:") | 3.Questions, as "Approve:" with options |
 | The failing test in the summary | "probably unrelated" | Inside a numbered step | Conclusion line: "cause not checked" |
@@ -165,7 +173,10 @@ The samples are illustrative: written by hand from each project's published rule
 > 4. **Todos:**
 >    - **Payment test:** find why `payment.spec.ts:88` fails; I did not change payment code.
 > 5. **Backlog:**
->    - **jsonwebtoken:** 8.5.1 is old; update it after the deploy.
+> 6. **Risks:**
+>    - **R1.** `jsonwebtoken` 8.5.1 is older than the 9.0.0 security release.
+>      - `<a>` update it after the deploy | (b) skip | (c) later
+> 7. **AIIdeas:**
 
 Full files: [examples/compare/](examples/compare/).
 </details>
@@ -178,7 +189,7 @@ The section numbers are the same in every language, so a script can find section
 
 ## Any language
 
-The reply body follows your language. The six section labels stay in English and keep the same order. The rules do not change the language of the body.
+The reply body follows your language. The eight section labels stay in English and keep the same order. The rules do not change the language of the body.
 
 | Reply body | Example |
 |---|---|
@@ -196,7 +207,7 @@ The maintainers wrote these examples. Native speakers: [fix or add your language
 | | i-have-adhd | i-have-asd-ste100 |
 |---|---|---|
 | Best for | Starting the next action | Decisions, approvals and status across many agent reports |
-| Reply shape | Next action first, numbered steps, one next step at the end | Key-first bullets, a one-sentence conclusion, six numbered sections |
+| Reply shape | Next action first, numbered steps, one next step at the end | Key-first bullets, a one-sentence conclusion, eight numbered sections |
 | Turned on | By command; always-on with an opt-in flag | On by default after install; `stop ste mode` or an opt-out file |
 | Drift control | Rules at session start | Session start plus one reminder line per prompt |
 | Languages | Rules in English; README in 10 languages | Body follows the user's language; section labels stay in English; examples in 5 languages |
