@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "notice": "Synthetic review fixtures. Sample replies are authored examples, not model-evaluation results.",
+  "cases": [
+    {
+      "id": "partial-success-unknown-cause",
+      "request": "Summarize this run briefly. Keep all checked facts and do not guess the failure cause.",
+      "evidence": {
+        "build": "passed",
+        "tests_run": 12,
+        "tests_passed": 11,
+        "tests_failed": 1,
+        "failed_test": "payments.test_refund_timeout",
+        "cause": "not investigated",
+        "fix": "none attempted"
+      },
+      "must_keep_facts": [
+        "The build passed.",
+        "Twelve tests ran; eleven passed and one failed.",
+        "The failing test is `payments.test_refund_timeout`.",
+        "The cause has not been investigated.",
+        "No fix was attempted."
+      ],
+      "must_not_claim": [
+        "The cause is a timeout in the payment handler.",
+        "A fix has been applied."
+      ],
+      "sample_reply": "- **Build:** The build passed.\n- **Tests:** Twelve tests ran; eleven passed and one failed.\n- **Failure:** The failing test is `payments.test_refund_timeout`.\n- **Cause:** The cause has not been investigated.\n- **Fix:** No fix was attempted.\n\n**Conclusion:** The build passed; one test failed, and its cause has not been investigated.\n\n0. **Done:**\n   - **Run:** build passed; 12 tests ran, 11 passed and one failed.\n1. **InProgress:**\n2. **Pending:**\n3. **Questions:**\n4. **Todos:**\n5. **Backlog:**\n6. **Risks:**\n7. **AIIdeas:**\n"
+    },
+    {
+      "id": "exact-output-json",
+      "request": "Return only one JSON object with keys result, passed, failed, cause in this order. Use null for a cause that was not investigated. Add no prose or Markdown.",
+      "evidence": {
+        "result": "partial",
+        "passed": 11,
+        "failed": 1,
+        "cause": null
+      },
+      "required_keys_in_order": [
+        "result",
+        "passed",
+        "failed",
+        "cause"
+      ],
+      "exact_json": "{\"result\":\"partial\",\"passed\":11,\"failed\":1,\"cause\":null}"
+    }
+  ]
+}
