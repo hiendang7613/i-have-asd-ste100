@@ -9,7 +9,7 @@ Map for agents working on this repository. The behavior lives in `skills/i-have-
 | Codex | `.codex-plugin/plugin.json` | Codex manifest; skills from `./skills/`. |
 | Hooks | `hooks/hooks.json`, `hooks/ste-mode.mjs` | On by default after install (opt-out file or `I_HAVE_ASD_STE100=off`): SessionStart injects the skill; UserPromptSubmit adds a one-line reminder and handles "stop ste mode" / "ste mode". |
 | Offline checker | `scripts/check_reply.py` | Counts shape, line and sentence length, openers and closers. No model call. |
-| Evals | `evals/<case>/prompt.md`, `evals/<case>/graders/*.md` | Suite for `claude plugin eval`. Running it calls paid models. |
+| Evals | `evals/` (local only, not in the repository) | Suite for `claude plugin eval`. Running it calls paid models. |
 | Examples | `examples/` | Before and after replies used by the README and the tests. |
 | Licences | `LICENSE`, `licenses/` | MIT, plus the i-have-adhd notice and the ASD-STE100 non-affiliation note. |
 | References | `ref_repos/` | Upstream repositories for reading only. Ignored by Git and never shipped. |

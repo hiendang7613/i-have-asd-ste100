@@ -84,6 +84,7 @@ if __name__ == "__main__":
     unittest.main()
 
 
+@unittest.skipUnless((ROOT / "evals").is_dir(), "the eval suite is kept locally, not in the repository")
 class EvalSuiteTests(unittest.TestCase):
     """The eval suite is only written, never run here (running it calls paid models); it must at least load."""
 

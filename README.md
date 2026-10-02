@@ -242,7 +242,7 @@ Yes: `python3 scripts/check_reply.py reply.md`. It checks the conclusion, the se
 ## Evidence, honestly
 
 No public project in this space has measured human comprehension. i-have-adhd has the best evidence so far: a blind LLM-judge A/B whose own release gate still failed.
-This repository has ten eval cases for `claude plugin eval` in [evals/](evals/). They have not run yet, so this README claims no scores.
+The maintainers keep ten eval cases for `claude plugin eval` outside this repository. They have not run yet, so this README claims no scores.
 The research behind each rule, with sources and strength ratings, is in [docs/RESEARCH.md](docs/RESEARCH.md).
 
 ## Made for Agent Room
