@@ -1,0 +1,34 @@
+{
+  "name": "i-have-asd-ste100",
+  "version": "0.2.0",
+  "description": "Short, plain, predictable replies: a short body in one-idea sentences, then a fixed conclusion block at the end. Rules adapted from ASD-STE100 principles.",
+  "author": {
+    "name": "hiendang7613"
+  },
+  "license": "MIT",
+  "keywords": [
+    "output-style",
+    "plain-language",
+    "simplified-technical-english",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "I Have ASD-STE100",
+    "shortDescription": "Plain, predictable replies with a closing conclusion block",
+    "longDescription": "Shape Codex replies: a short body in simple one-idea sentences, then a fixed five-line conclusion block (result, approvals, user action, question, open work) that a reader can trust on its own.",
+    "developerName": "hiendang7613",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions"
+    ],
+    "defaultPrompt": [
+      "Use i-have-asd-ste100 for this task.",
+      "Rewrite this answer in the i-have-asd-ste100 shape.",
+      "Check this reply against i-have-asd-ste100."
+    ],
+    "websiteURL": "https://github.com/hiendang7613/i-have-asd-ste100"
+  },
+  "homepage": "https://github.com/hiendang7613/i-have-asd-ste100",
+  "repository": "https://github.com/hiendang7613/i-have-asd-ste100"
+}

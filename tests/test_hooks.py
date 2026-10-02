@@ -1,0 +1,116 @@
+"""The hook runs through the exact launcher in hooks/hooks.json, in a throwaway home directory."""
+import json
+import os
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+HOOKS = json.loads((ROOT / "hooks/hooks.json").read_text())
+LAUNCH = HOOKS["hooks"]["SessionStart"][0]["hooks"][0]["command"]
+
+
+class HookTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix="ste hook ")
+        home = Path(self.tmp.name)
+        for name in (".claude", ".codex", "tmp"):
+            (home / name).mkdir()
+        self.home = home
+        self.env = {"PATH": os.environ["PATH"], "HOME": str(home), "CLAUDE_CONFIG_DIR": str(home / ".claude"),
+                    "CODEX_HOME": str(home / ".codex"), "TMPDIR": str(home / "tmp"), "CLAUDE_PLUGIN_ROOT": str(ROOT)}
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def run_hook(self, payload, command=LAUNCH, **env):
+        text = payload if isinstance(payload, str) else json.dumps(payload)
+        result = subprocess.run(["sh", "-c", command], input=text, capture_output=True, text=True,
+                                env=self.env | env, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result.stdout
+
+    def opt_in(self):
+        """On by default since 0.1.1: nothing to do."""
+
+    def opt_out(self, where=".claude"):
+        (self.home / where / ".i-have-asd-ste100-off").write_text("")
+
+    def test_both_events_use_the_same_launcher(self):
+        prompt_command = HOOKS["hooks"]["UserPromptSubmit"][0]["hooks"][0]["command"]
+        self.assertEqual(prompt_command, LAUNCH)
+        self.assertIn("startup", HOOKS["hooks"]["SessionStart"][0]["matcher"])
+
+    def test_on_by_default_after_install(self):
+        self.assertTrue(self.run_hook({"hook_event_name": "SessionStart", "session_id": "a"}).startswith("STE REPLY MODE ACTIVE"))
+        self.assertIn("Reply shape", self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "hi"}))
+
+    def test_session_start_injects_the_skill_body_without_frontmatter(self):
+        self.opt_in()
+        out = self.run_hook({"hook_event_name": "SessionStart", "session_id": "a"})
+        self.assertTrue(out.startswith("STE REPLY MODE ACTIVE"))
+        self.assertIn("## The shape", out)
+        self.assertNotIn("disable-model-invocation", out)
+
+    def test_opt_out_file_in_either_home_or_environment_silences_both_events(self):
+        start = {"hook_event_name": "SessionStart", "session_id": "a"}
+        prompt = {"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "hi"}
+        self.assertIn(str(self.home / ".claude/.i-have-asd-ste100-off"), self.run_hook(start))
+        for where in (".claude", ".codex"):
+            with self.subTest(where=where):
+                self.opt_out(where)
+                self.assertEqual((self.run_hook(start), self.run_hook(prompt)), ("", ""))
+                (self.home / where / ".i-have-asd-ste100-off").unlink()
+        for name in ("I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"):
+            with self.subTest(name=name):
+                self.assertEqual(self.run_hook(start, **{name: "OFF"}), "")
+                self.assertEqual(self.run_hook(prompt, **{name: "off"}), "")
+        self.assertIn("STE REPLY MODE ACTIVE", self.run_hook(start, I_HAVE_ASD_STE100="on"))
+
+    def test_prompt_reminder_is_one_line_and_short(self):
+        self.opt_in()
+        out = self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "fix the bug"})
+        self.assertEqual(out.count("\n"), 1)
+        self.assertLess(len(out.encode()), 400)
+        self.assertIn("conclusion block last", out)
+
+    def test_stop_and_restart_work_per_session(self):
+        self.opt_in()
+        stop = self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": " Stop STE mode. "})
+        self.assertIn("off for this session", stop)
+        self.assertEqual(self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "next"}), "")
+        self.assertEqual(self.run_hook({"hook_event_name": "SessionStart", "session_id": "a"}), "")
+        self.assertIn("Reply shape", self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "b", "prompt": "next"}))
+        prose = {"hook_event_name": "UserPromptSubmit", "session_id": "b", "prompt": "in normal mode the app crashes"}
+        self.assertIn("Reply shape", self.run_hook(prose))
+        self.assertIn("Reply shape", self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "ste mode"}))
+        self.assertIn("Reply shape", self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "next"}))
+
+    def test_odd_session_ids_cannot_escape_the_state_directory(self):
+        self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "../../evil", "prompt": "normal mode"})
+        written = [p for p in self.home.rglob("*.off")]
+        self.assertEqual([p.parent for p in written], [self.home / ".claude/.i-have-asd-ste100-sessions"])
+        self.assertEqual(list((self.home / "tmp").iterdir()), [])
+
+    def test_stop_phrase_inside_a_longer_prompt_counts_unless_quoted(self):
+        def prompt(session, text):
+            return self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": session, "prompt": text})
+        self.assertIn("off for this session", prompt("c", "Stop STE mode and fix the login test"))
+        self.assertEqual(prompt("c", "next"), "")
+        self.assertIn("Reply shape", prompt("c", "ok, start ste mode again please"))
+        for quoted in ('the docs say "stop ste mode" turns it off', "run `stop ste mode` later",
+                       "```\nstop ste mode\n```"):
+            with self.subTest(quoted=quoted):
+                self.assertIn("Reply shape", prompt("d", quoted))
+
+    def test_bad_input_and_missing_root_never_fail(self):
+        self.opt_in()
+        self.assertEqual(self.run_hook("not json"), "")
+        env = dict(self.env); env.pop("CLAUDE_PLUGIN_ROOT")
+        result = subprocess.run(["sh", "-c", LAUNCH], input="{}", capture_output=True, text=True, env=env, timeout=30)
+        self.assertEqual((result.returncode, result.stdout), (0, ""))
+
+
+if __name__ == "__main__":
+    unittest.main()

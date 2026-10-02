@@ -1,0 +1,36 @@
+name: Add or fix my language
+description: Labels and an example reply in your language. The best first contribution.
+title: "[language] "
+labels: ["language", "good first issue"]
+body:
+  - type: input
+    id: language
+    attributes:
+      label: Language and locale
+      placeholder: "Japanese (ja-JP)"
+    validations:
+      required: true
+  - type: textarea
+    id: labels
+    attributes:
+      label: The five labels in your language
+      description: Short (one to three words), natural, and always the same. Keep the order.
+      value: |
+        Conclusion:
+        Approve:
+        Your action:
+        Question:
+        Open:
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: One real reply in your language that follows the shape
+      description: A short body, then the five-line block. Remove private data.
+      render: markdown
+  - type: textarea
+    id: notes
+    attributes:
+      label: Sentence length in your language
+      description: Words or characters? What feels short and clear to a native reader?

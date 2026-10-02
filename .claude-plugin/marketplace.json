@@ -1,0 +1,16 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "i-have-asd-ste100",
+  "description": "Plain, predictable reply format for coding agents.",
+  "owner": {
+    "name": "hiendang7613"
+  },
+  "plugins": [
+    {
+      "name": "i-have-asd-ste100",
+      "description": "Short body, simple sentences, fixed conclusion block at the end.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

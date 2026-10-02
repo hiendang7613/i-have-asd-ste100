@@ -1,0 +1,22 @@
+name: Propose a rule change
+description: Add, remove or change a rule. Bring an example and, if you can, an eval case.
+labels: ["rules"]
+body:
+  - type: textarea
+    id: change
+    attributes:
+      label: The rule change
+    validations:
+      required: true
+  - type: textarea
+    id: before-after
+    attributes:
+      label: A real reply before and after the change
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: An eval case, a measurement, or a source. Say how strong it is.

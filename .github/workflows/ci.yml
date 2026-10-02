@@ -1,0 +1,31 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install the YAML parser used by the eval-file tests
+        run: python -m pip install --quiet pyyaml
+      - name: Unit tests (hooks, manifests, skill, checker, eval files)
+        run: python -m unittest discover -s tests -v
+      - name: Check the shipped examples with the offline checker
+        run: |
+          python scripts/check_reply.py examples/after-en.md
+          python scripts/check_reply.py examples/after-vi.md
+      - name: Whitespace check
+        run: git diff --check HEAD~0
