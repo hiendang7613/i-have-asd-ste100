@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hiendang7613/i-have-asd-ste100/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4F46E5"></a>
-  <img alt="Version 0.6.1" src="https://img.shields.io/badge/version-0.6.1-4F46E5">
+  <img alt="Version 0.6.2" src="https://img.shields.io/badge/version-0.6.2-4F46E5">
   <img alt="Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex-0F172A">
   <img alt="Any language" src="https://img.shields.io/badge/replies-any%20language-F59E0B">
 </p>
@@ -79,16 +79,17 @@ Every reply that has more than one fact ends like this:
 | Part | What it holds | Who acts |
 |---|---|---|
 | **Conclusion** | The result in one sentence. Bad news first: failure, skip, blocker, unverified work. | Nobody: it is the verdict |
-| **0.Done** | Finished and checked work, with its evidence | The agent, already |
-| **1.InProgress** | Work running now: builds, jobs, other agents | The agent or a tool, now |
-| **2.Questions** | Everything that needs you: choices, and approvals that start with "Approve:" | You |
-| **3.Todos** | Work in the current task the agent does next, in order | The agent, next |
-| **4.Pending** | Work waiting for someone or something else | A third party |
-| **5.Backlog** | Work deferred to later or optional, outside the current task | The agent, later |
+| `0. **Done:**` | Finished and checked work, with its evidence | The agent, already |
+| `1. **InProgress:**` | Work running now: builds, jobs, other agents | The agent or a tool, now |
+| `2. **Questions:**` | Everything that needs you: choices, and approvals that start with "Approve:" | You |
+| `3. **Todos:**` | Work in the current task the agent does next, in order | The agent, next |
+| `4. **Pending:**` | Work waiting for someone or something else | A third party |
+| `5. **Backlog:**` | Work deferred to later or optional, outside the current task | The agent, later |
 
 - **All six sections, always, as one list from 0 to 5.** An empty one shows only its label, so you always see whether anything runs, waits or comes next. One blank line separates the list from the Conclusion line; none separates the sections. You can answer "2, Q1".
 - **The recommended option** is written as `<a>` in code; the other options are (b), (c). You answer with one letter.
 - **Small answers stay small:** one fact, one sentence. Code-only, JSON-only and one-command requests get exactly that.
+- **Empty section:** show only its numbered English label, for example `2. **Questions:**`.
 
 <a name="format"></a>
 
@@ -168,18 +169,17 @@ The section numbers are the same in every language, so a script can find section
 
 ## Any language
 
-The agent writes the label words in your language and keeps them identical for the session. The numbers never change.
-The rules name no language, so they never pull a reply into English.
+The reply body follows your language. The six section labels stay in English and keep the same order. The rules do not change the language of the body.
 
-| Language | Conclusion · 0 · 1 · 2 · 3 · 4 · 5 | Example |
-|---|---|---|
-| English | Conclusion · Done · InProgress · Questions · Todos · Pending · Backlog | [after-en.md](examples/after-en.md) |
-| Tiếng Việt | Kết luận · Đã xong · Đang làm · Câu hỏi · Việc cần làm · Đang chờ · Tồn đọng | [after-vi.md](examples/after-vi.md) |
-| 中文 | 结论 · 已完成 · 进行中 · 问题 · 待办 · 等待中 · 以后再做 | [after-zh.md](examples/after-zh.md) |
-| 日本語 | 結論 · 完了 · 進行中 · 質問 · やること · 保留 · バックログ | [after-ja.md](examples/after-ja.md) |
-| Español | Conclusión · Hecho · En curso · Preguntas · Por hacer · Pendiente · Más adelante | [after-es.md](examples/after-es.md) |
+| Reply body | Example |
+|---|---|
+| English | [after-en.md](examples/after-en.md) |
+| Tiếng Việt | [after-vi.md](examples/after-vi.md) |
+| 中文 | [after-zh.md](examples/after-zh.md) |
+| 日本語 | [after-ja.md](examples/after-ja.md) |
+| Español | [after-es.md](examples/after-es.md) |
 
-Sentence length is measured in words where words have spaces, and in characters for Chinese and Japanese (about 1.5 characters per English word).
+Sentence-length checks are approximate. Spaces do not mark words in every language; for example, Vietnamese spaces separate syllables. Use short sentences as a reading-time target, not a strict count.
 The maintainers wrote these examples. Native speakers: [fix or add your language](.github/ISSUE_TEMPLATE/language.yml).
 
 ## i-have-adhd and i-have-asd-ste100
@@ -190,7 +190,7 @@ The maintainers wrote these examples. Native speakers: [fix or add your language
 | Reply shape | Next action first, numbered steps, one next step at the end | Key-first bullets, a one-sentence conclusion, six numbered sections |
 | Turned on | By command; always-on with an opt-in flag | On by default after install; `stop ste mode` or an opt-out file |
 | Drift control | Rules at session start | Session start plus one reminder line per prompt |
-| Languages | Rules in English; README in 10 languages | Language-neutral rules; labels in your language; examples in 5 languages |
+| Languages | Rules in English; README in 10 languages | Body follows the user's language; section labels stay in English; examples in 5 languages |
 | Runtimes | Claude Code, Codex, Cursor, Gemini, OpenCode, Pi, Qwen, Kimi | Claude Code, Codex |
 | Offline checker | No | `scripts/check_reply.py`: conclusion, section order, `<a>` markers, any script |
 | Measured evidence | Blind LLM-judge A/B, 14 cases, 3 trials: weighted 4.045 to 4.473; its own release gate failed (3 blocking findings remained) | 10 eval cases written; not run yet, so no scores are claimed |
@@ -243,7 +243,7 @@ The research behind each rule, with sources and strength ratings, is in [docs/RE
 
 [Agent Room](https://github.com/hiendang7613/agent-room-plugin) runs a small team of Claude Code and Codex agents in your project:
 shared tasks, peer review and recovery after a crash. One agent talks to you; the others report through it.
-With i-have-asd-ste100 installed, every report from the room has the same shape. Agent Room plans to add it as an install dependency.
+Installing Agent Room installs i-have-asd-ste100 too, so every report from the room has the same shape.
 
 ## Contributing and license
 
