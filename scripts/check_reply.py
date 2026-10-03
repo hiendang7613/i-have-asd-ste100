@@ -53,6 +53,13 @@ ZONE_LINE = re.compile(r"^\*\*(%s)\*\*\s*$" % "|".join(ZONES))
 STEP_LINE = re.compile(r"^- (?:`(?:1[0-2]|[1-9]):[0-5][0-9] (?:AM|PM)` )?\S.* => \S")
 TIME_LIKE = re.compile(r"^- `[^`]*\d:\d\d[^`]*`")
 STEP_TIME = re.compile(r"^- `(?:1[0-2]|[1-9]):[0-5][0-9] (?:AM|PM)` ")
+RESULT_BULLET = re.compile(r"^[-*]\s+(.*)$")
+RESULT_KEY = re.compile(r"^(?:\*\*[^*\n]+\*\*|`[^`\n]+`)")
+# A sentence ends where a Latin stop is followed by a space and a capital letter, or where a CJK stop is
+# followed by more text. "e.g. this", "0.4.2" and "check_reply.py" do not end a sentence.
+LATIN_STOP = re.compile(r"[.!?]\s+(\S)")
+CJK_STOP = re.compile(r"[。！？]\s*\S")
+ABBREVIATION = re.compile(r"(?:\b(?:[A-Za-z]\.){2,}|\b(?:vs|etc|cf|approx|incl|no|nr|mr|ms|dr|st)\.)$", re.I)
 OPENERS = re.compile(r"^(great question|good question|sure[,!. ]|certainly|of course|let me |i'll |i will now|"
                      r"câu hỏi hay|tuyệt|để tôi |chắc chắn rồi)", re.I)
 CLOSERS = re.compile(r"(hope this helps|let me know if|feel free to|happy to help|hy vọng (điều này|giúp)|"
@@ -106,6 +113,15 @@ def sentences(text):
     plain = re.sub(r"(?m)^\s*(?:[-*•]|\d+[.)]|#+)\s+", "", plain)
     parts = re.split(SENTENCE_END + r"|\n+", plain)
     return [p.strip() for p in parts if units(p) >= 3]
+
+
+def sentence_count(line):
+    """Sentences in one line. Inline code counts as a lowercase word, and a stop that ends an abbreviation
+    such as e.g. or vs. does not end the sentence."""
+    plain = re.sub(r"`[^`]*`", "x", line).strip()
+    breaks = sum(match.group(1).isupper() and not ABBREVIATION.search(plain[:match.start() + 1])
+                 for match in LATIN_STOP.finditer(plain))
+    return 1 + breaks + len(CJK_STOP.findall(plain)) if plain else 0
 
 
 def split_reply(text):
@@ -242,6 +258,10 @@ def zone_problems(text):
     for line in (line for line in lines[agents + 1:result] if line.strip()):
         if not STEP_LINE.match(line) or (TIME_LIKE.match(line) and not STEP_TIME.match(line)):
             problems.append("Agents-Zone lines are '- `4:43 PM` why => what' (time only from a real clock): %s" % line[:40])
+    for line in lines[result + 1:admin]:
+        bullet = RESULT_BULLET.match(line)
+        if bullet and not RESULT_KEY.match(bullet.group(1)):
+            problems.append("Result-Zone bullets start with a bold key or a code path: %s" % line[:40])
     after = [line for line in lines[admin + 1:] if line.strip()]
     if admin + 1 < len(lines) and lines[admin + 1].strip():
         problems.append("Put a blank line after **Admin-Zone**.")
@@ -266,6 +286,8 @@ def check(text):
             violations.append("The conclusion label must be exactly 'Conclusion'; found '%s'." % conclusion_label)
         if units(conclusion) > MAX_CONCLUSION_WORDS:
             violations.append("The Conclusion line has %g words (limit %d)." % (units(conclusion), MAX_CONCLUSION_WORDS))
+        if sentence_count(conclusion) > 1:
+            violations.append("The Conclusion line has %d sentences; write one." % sentence_count(conclusion))
         numbers = [number for number, _, _, _ in sections]
         missing = [n for n in ALWAYS_SHOWN if n not in numbers]
         if missing:
@@ -300,6 +322,8 @@ def check(text):
         violations.append("The reply contains emoji; write status in words.")
     if re.search(r"\*\*\[|^[-*]\s+\[[^\]]+\]", outside_code, re.M):
         violations.append("Labels use square brackets; write bold labels without them.")
+    elif re.search(r"[\[\]]", outside_code):
+        violations.append("The reply uses square brackets outside code; use words or a code span.")
     if any(re.search(r"(?m)^\d\.\s+\*\*[^*]+:\*\*", payload)
            for _, _, payload in fenced_blocks(text)):
         violations.append("The conclusion part is inside a code block; the reader would see raw markers.")

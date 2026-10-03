@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+The checker now enforces three rules that the skill already states. The reply rules do not change.
+- The Conclusion line must be one sentence. A Latin stop followed by a capital letter, or a CJK stop followed by more text, starts a new sentence. Abbreviations such as `e.g.`, `i.e.` and `vs.`, versions, file names and inline code after a stop do not.
+- Top-level Result-Zone bullets must start with a bold key or a code path. Nested bullets are not checked.
+- Square brackets outside code are a violation, including Markdown links. Brackets inside code spans and fences stay allowed.
+
 ## 0.12.0 — 2026-10-03
 The plugin is renamed from `i-have-asd-ste100` to `ihav-asd-ste100`. The reply rules do not change.
 - New repository: https://github.com/hiendang7613/ihav-asd-ste100. The plugin, marketplace, skill folder and Codex names use the new name.

@@ -279,10 +279,40 @@ class StyleTests(unittest.TestCase):
         self.assertTrue(any("opener" in v for v in check("Great question! " + FULL)["violations"]))
         closer = FULL.replace("- **Tests:** 214 ran and 213 pass.", "- **Tests:** 214 ran and 213 pass. Hope this helps.")
         self.assertTrue(any("pleasantry" in v for v in check(closer)["violations"]))
-        long_body = FULL.replace("- **Tests:** 214 ran and 213 pass.", "- " + " ".join(["word"] * 30) + ".")
+        long_body = FULL.replace("- **Tests:** 214 ran and 213 pass.", "- **Note:** " + " ".join(["word"] * 29) + ".")
         report = check(long_body)
         self.assertTrue(report["ok"])
         self.assertTrue(any("Long sentence (30 words)" in w for w in report["warnings"]))
+
+    def test_conclusion_is_one_sentence(self):
+        two = FULL.replace("cause not checked.", "cause not checked. Deploy waits for CI.")
+        self.assertTrue(any("2 sentences" in v for v in check(two)["violations"]))
+        cjk = FULL.replace("cause not checked.", "cause not checked。还要等 CI。")
+        self.assertTrue(any("sentences" in v for v in check(cjk)["violations"]))
+        for one in ("cause not checked, e.g. in `check_reply.py`.", "version 0.4.2 is not checked.",
+                    "cause in `a.py. B.py` not checked.", "cause not checked, e.g. CI is red.",
+                    "cause not checked, e.g. `CI` is red.", "cause i.e. CI not checked.", "Codex vs. Claude not checked."):
+            same = FULL.replace("cause not checked.", one)
+            self.assertNotEqual(same, FULL)
+            self.assertTrue(check(same)["ok"], check(same))
+
+    def test_result_bullets_are_key_first(self):
+        plain = FULL.replace("- **Tests:** 214 ran", "- 214 tests ran")
+        self.assertTrue(any("Result-Zone bullets" in v for v in check(plain)["violations"]))
+        path = FULL.replace("- **Tests:** 214 ran and 213 pass.", "- `tests/auth.spec.ts`: 214 ran and 213 pass.")
+        self.assertTrue(check(path)["ok"], check(path))
+        nested = FULL.replace("213 pass.", "213 pass.\n   - one detail without a key.")
+        self.assertTrue(check(nested)["ok"], check(nested))
+
+    def test_square_brackets_outside_code_fail(self):
+        prose = FULL.replace("213 pass.", "213 pass [see CI].")
+        self.assertTrue(any("square brackets outside code" in v for v in check(prose)["violations"]))
+        link = FULL.replace("213 pass.", "213 pass, see [CI](https://example.com).")
+        self.assertFalse(check(link)["ok"])
+        code = FULL.replace("213 pass.", "213 pass in `items[0]`.")
+        self.assertTrue(check(code)["ok"], check(code))
+        fenced = FULL.replace("**Result-Zone**\n", "**Result-Zone**\n- **Data:** shown below.\n\n```json\n[1, 2]\n```\n\n")
+        self.assertTrue(check(fenced)["ok"], check(fenced))
 
     def test_code_blocks_do_not_count_as_sentences(self):
         code = "```\n" + " ".join(["token"] * 60) + "\n```\n\n" + FULL
