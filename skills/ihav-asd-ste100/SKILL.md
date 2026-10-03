@@ -1,11 +1,11 @@
 ---
-name: i-have-asd-ste100
+name: ihav-asd-ste100
 description: 'Short, predictable replies in any language: key-first bullets, a one-sentence Conclusion, eight fixed status sections. "stop ste mode" turns it off.'
 disable-model-invocation: true
 license: MIT
 ---
 
-# i-have-asd-ste100
+# ihav-asd-ste100
 
 The reader is busy. Put the result, next action, or blocker first. Follow the body with a standalone conclusion.
 

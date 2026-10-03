@@ -14,7 +14,7 @@ class CodexAdapterTests(unittest.TestCase):
         skills_dir = ROOT / manifest["skills"]
         hooks_file = ROOT / manifest["hooks"]
 
-        self.assertTrue((skills_dir / "i-have-asd-ste100/SKILL.md").is_file())
+        self.assertTrue((skills_dir / "ihav-asd-ste100/SKILL.md").is_file())
         self.assertTrue(hooks_file.is_file())
 
         hooks = json.loads(hooks_file.read_text())["hooks"]

@@ -6,11 +6,11 @@ Thank you for helping. Humans and coding agents are welcome; the human who opens
 
 The rules work in any language, but the labels and examples need native speakers.
 Open an issue with the "Add or fix my language" form, or send a pull request that adds your language to
-`skills/i-have-asd-ste100/SKILL.md` (only if it stays small) and an example reply to `examples/`.
+`skills/ihav-asd-ste100/SKILL.md` (only if it stays small) and an example reply to `examples/`.
 
 ## Changing a rule
 
-1. Start from `skills/i-have-asd-ste100/SKILL.md`. It is the only source of truth.
+1. Start from `skills/ihav-asd-ste100/SKILL.md`. It is the only source of truth.
 2. Show a real reply before and after the change.
 3. Describe a prompt that shows the change; the maintainers keep the eval suite locally and run it before a release.
 4. Keep `SKILL.md` under 6,900 bytes, because the hook injects it into every session.

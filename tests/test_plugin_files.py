@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILL = ROOT / "skills/i-have-asd-ste100/SKILL.md"
+SKILL = ROOT / "skills/ihav-asd-ste100/SKILL.md"
 
 
 def shipped_files():
@@ -20,10 +20,10 @@ class ManifestTests(unittest.TestCase):
         claude = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         codex = json.loads((ROOT / ".codex-plugin/plugin.json").read_text())
         market = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude["name"], "i-have-asd-ste100")
+        self.assertEqual(claude["name"], "ihav-asd-ste100")
         self.assertEqual((codex["name"], codex["version"], codex["license"]), (claude["name"], claude["version"], claude["license"]))
         self.assertEqual(market["plugins"][0]["name"], claude["name"])
-        self.assertTrue((ROOT / codex["skills"] / "i-have-asd-ste100/SKILL.md").is_file())
+        self.assertTrue((ROOT / codex["skills"] / "ihav-asd-ste100/SKILL.md").is_file())
         self.assertRegex(claude["version"], r"^\d+\.\d+\.\d+$")
 
     def test_licence_and_third_party_notice_exist(self):
@@ -40,7 +40,7 @@ class SkillTests(unittest.TestCase):
         self.front = self.text.split("---")[1]
 
     def test_frontmatter_matches_the_directory_and_stays_manual(self):
-        self.assertIn("name: i-have-asd-ste100", self.front)
+        self.assertIn("name: ihav-asd-ste100", self.front)
         self.assertIn("disable-model-invocation: true", self.front)
 
     def test_skill_stays_small_because_always_on_injects_it_every_session(self):
@@ -123,7 +123,7 @@ class EvalSuiteTests(unittest.TestCase):
         for case in cases:
             with self.subTest(case=case.name):
                 front = self.front(case / "prompt.md")
-                self.assertNotIn("EVAL_I_HAVE_ASD_STE100", front)  # on by default since 0.1.1
+                self.assertNotIn("EVAL_IHAV_ASD_STE100", front)  # on by default since 0.1.1
                 self.assertIn("allowed_tools: []", front)
                 self.assertTrue(list((case / "graders").glob("*.md")))
 

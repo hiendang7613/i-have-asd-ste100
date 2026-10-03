@@ -1,13 +1,13 @@
 # Agent guide
 
-Map for agents working on this repository. The behavior lives in `skills/i-have-asd-ste100/SKILL.md`; this file does not replace it.
+Map for agents working on this repository. The behavior lives in `skills/ihav-asd-ste100/SKILL.md`; this file does not replace it.
 
 | Area | Location | Purpose |
 | --- | --- | --- |
-| Canonical rules | `skills/i-have-asd-ste100/SKILL.md` | The only source of truth for the reply rules. Change it first. |
+| Canonical rules | `skills/ihav-asd-ste100/SKILL.md` | The only source of truth for the reply rules. Change it first. |
 | Claude Code | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` | Plugin and local marketplace manifests. |
 | Codex | `.codex-plugin/plugin.json` | Codex manifest; skills from `./skills/`. |
-| Hooks | `hooks/hooks.json`, `hooks/ste-mode.mjs` | On by default after install (opt-out file or `I_HAVE_ASD_STE100=off`): SessionStart injects the skill; UserPromptSubmit adds a one-line reminder with the local time and handles "stop ste mode" / "ste mode"; PostToolBatch (Claude Code) adds the local time after each batch of tool calls, for the Agents-Zone step times. |
+| Hooks | `hooks/hooks.json`, `hooks/ste-mode.mjs` | On by default after install (opt-out file or `IHAV_ASD_STE100=off`): SessionStart injects the skill; UserPromptSubmit adds a one-line reminder with the local time and handles "stop ste mode" / "ste mode"; PostToolBatch (Claude Code) adds the local time after each batch of tool calls, for the Agents-Zone step times. |
 | Offline checker | `scripts/check_reply.py` | Counts shape, line and sentence length, openers and closers. No model call. |
 | Evals | `evals/` (local only, not in the repository) | Suite for `claude plugin eval`. Running it calls paid models. |
 | Examples | `examples/` | Before and after replies used by the README and the tests. |

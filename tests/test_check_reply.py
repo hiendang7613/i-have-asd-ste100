@@ -48,7 +48,7 @@ class ShapeTests(unittest.TestCase):
         self.assertEqual(report["stats"]["sections"], list(range(8)))
 
     def test_shipped_examples_pass_and_the_old_style_fails(self):
-        for name in ("after-en.md", "after-vi.md", "after-zh.md", "after-ja.md", "after-es.md", "compare/3-i-have-asd-ste100.md"):
+        for name in ("after-en.md", "after-vi.md", "after-zh.md", "after-ja.md", "after-es.md", "compare/3-ihav-asd-ste100.md"):
             with self.subTest(name=name):
                 self.assertTrue(check((ROOT / "examples" / name).read_text())["ok"])
         before = check((ROOT / "examples/before.md").read_text())

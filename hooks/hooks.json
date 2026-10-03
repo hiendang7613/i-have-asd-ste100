@@ -8,7 +8,7 @@
             "type": "command",
             "command": "node -e \"(async()=>{const r=process.env.CLAUDE_PLUGIN_ROOT||process.env.PLUGIN_ROOT;if(r)await import(require('node:url').pathToFileURL(require('node:path').join(r,'hooks','ste-mode.mjs')).href)})().catch(()=>{})\"",
             "timeout": 10,
-            "statusMessage": "Loading i-have-asd-ste100 reply rules..."
+            "statusMessage": "Loading ihav-asd-ste100 reply rules..."
           }
         ]
       }

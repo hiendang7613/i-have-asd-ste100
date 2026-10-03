@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.0 — 2026-10-03
+The plugin is renamed from `i-have-asd-ste100` to `ihav-asd-ste100`. The reply rules do not change.
+- New repository: https://github.com/hiendang7613/ihav-asd-ste100. The plugin, marketplace, skill folder and Codex names use the new name.
+- Breaking for opt-outs: the opt-out file is now `.ihav-asd-ste100-off`, the session markers live in `.ihav-asd-ste100-sessions/`, and the switches are `IHAV_ASD_STE100=off` and `EVAL_IHAV_ASD_STE100=off`. The old file and variables no longer turn the hooks off.
+- The checker scans tilde and long backtick fences as code.
+
 ## 0.11.0 — 2026-10-03
 Three zones, chosen by the first user. The eight sections do not change.
 - Each full reply has three zones, each under a bold label line: **Agents-Zone** (every step this turn, one line each: `` - `4:43 PM` why => what ``), **Result-Zone** (key-first bullets) and **Admin-Zone** (the Conclusion line and the eight sections).

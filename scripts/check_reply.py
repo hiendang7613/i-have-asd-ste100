@@ -1,4 +1,4 @@
-"""Offline check of one reply against the i-have-asd-ste100 shape. No model call, no network.
+"""Offline check of one reply against the ihav-asd-ste100 shape. No model call, no network.
 
 Usage:
   python3 scripts/check_reply.py REPLY.md            # human-readable report

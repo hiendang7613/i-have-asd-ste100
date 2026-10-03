@@ -1,12 +1,12 @@
-// i-have-asd-ste100 hook for SessionStart, UserPromptSubmit and PostToolBatch (Claude Code; Codex runs no plugin hooks).
+// ihav-asd-ste100 hook for SessionStart, UserPromptSubmit and PostToolBatch (Claude Code; Codex runs no plugin hooks).
 //
-// On by default once the plugin is installed. Opt out everywhere with the file .i-have-asd-ste100-off in
+// On by default once the plugin is installed. Opt out everywhere with the file .ihav-asd-ste100-off in
 // $CLAUDE_CONFIG_DIR (default ~/.claude) or $CODEX_HOME (default ~/.codex), or for one process with
-// I_HAVE_ASD_STE100=off (EVAL_I_HAVE_ASD_STE100=off in `claude plugin eval` cases).
+// IHAV_ASD_STE100=off (EVAL_IHAV_ASD_STE100=off in `claude plugin eval` cases).
 // SessionStart injects the skill body. UserPromptSubmit adds a one-line reminder against style drift,
 // "stop ste mode" anywhere outside quotes or code (or the exact prompt "normal mode") turns it off for the session;
 // "ste mode" as the whole prompt, or "start ste mode" anywhere, turns it on again. The per-session state lives in
-// $CLAUDE_CONFIG_DIR/.i-have-asd-ste100-sessions/ so it survives compaction and resume.
+// $CLAUDE_CONFIG_DIR/.ihav-asd-ste100-sessions/ so it survives compaction and resume.
 // The model has no clock: the reminder and PostToolBatch give it the local time, so each Agents-Zone step can carry
 // a real time. PostToolBatch fires once per batch of tool calls and adds about a dozen tokens of context.
 // Any failure exits 0 with no output: this hook must never block a session or a prompt.
@@ -16,13 +16,13 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const OFF_FILE = ".i-have-asd-ste100-off";
+const OFF_FILE = ".ihav-asd-ste100-off";
 const OFF_EXACT = new Set(["stop ste mode", "normal mode"]);
 const ON_EXACT = new Set(["ste mode", "start ste mode", "ste mode on"]);
 const OFF_ANYWHERE = /\bstop ste mode\b/;
 const ON_ANYWHERE = /\b(?:start ste mode|ste mode on)\b/;
 export const REMINDER =
-  "[i-have-asd-ste100] Reply shape: **Agents-Zone** (every step: `time` why => what), **Result-Zone** (key-first " +
+  "[ihav-asd-ste100] Reply shape: **Agents-Zone** (every step: `time` why => what), **Result-Zone** (key-first " +
   "bullets), **Admin-Zone**: **Conclusion:** one sentence, blank line, 0. **Done:**, 1. **InProgress:**, 2. **Pending:**, " +
   "3. **Questions:**, 4. **Todos:**, 5. **Backlog:**, 6. **Risks:**, 7. **AIIdeas:**; items are sub-items with a bold key; " +
   '`<a>` = recommended. No emoji or square brackets. "stop ste mode" turns this off.';
@@ -34,7 +34,7 @@ export function clock(now = new Date()) {
   return `${hour % 12 || 12}:${minute} ${hour < 12 ? "AM" : "PM"}`;
 }
 
-const ENV_SWITCHES = ["I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"];
+const ENV_SWITCHES = ["IHAV_ASD_STE100", "EVAL_IHAV_ASD_STE100"];
 
 // Returns how to turn the mode off everywhere, or "" when the user already turned it off.
 function offSwitch() {
@@ -61,7 +61,7 @@ function configDir() {
 
 function offMarker(sessionId) {
   const safe = String(sessionId || "default").replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 128) || "default";
-  return path.join(configDir(), ".i-have-asd-ste100-sessions", `${safe}.off`);
+  return path.join(configDir(), ".ihav-asd-ste100-sessions", `${safe}.off`);
 }
 
 // Text inside code fences, inline code or quotes is quoted material, not a command.
@@ -75,7 +75,7 @@ function unquoted(prompt) {
 
 function skillBody() {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  const file = path.join(here, "..", "skills", "i-have-asd-ste100", "SKILL.md");
+  const file = path.join(here, "..", "skills", "ihav-asd-ste100", "SKILL.md");
   return fs
     .readFileSync(file, "utf8")
     .replace(/^---[^\S\r\n]*\r?\n[\s\S]*?\r?\n---[^\S\r\n]*(?:\r?\n|$)/, "")
@@ -106,14 +106,14 @@ function run() {
     if (OFF_EXACT.has(prompt) || OFF_ANYWHERE.test(free)) {
       fs.mkdirSync(path.dirname(marker), { recursive: true });
       fs.writeFileSync(marker, "off\n");
-      return "[i-have-asd-ste100] STE reply mode is off for this session. Confirm in one line, then use your default style.\n";
+      return "[ihav-asd-ste100] STE reply mode is off for this session. Confirm in one line, then use your default style.\n";
     }
     if (ON_EXACT.has(prompt) || ON_ANYWHERE.test(free)) fs.rmSync(marker, { force: true });
     return fs.existsSync(marker) ? "" : `${REMINDER} Now ${clock()}.\n`;
   }
   if (event === "PostToolBatch") {
     if (fs.existsSync(marker)) return "";
-    const additionalContext = `i-have-asd-ste100 clock: ${clock()}`;
+    const additionalContext = `ihav-asd-ste100 clock: ${clock()}`;
     return `${JSON.stringify({ hookSpecificOutput: { hookEventName: "PostToolBatch", additionalContext } })}\n`;
   }
   return "";

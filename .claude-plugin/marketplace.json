@@ -1,13 +1,13 @@
 {
   "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
-  "name": "i-have-asd-ste100",
+  "name": "ihav-asd-ste100",
   "description": "Plain, predictable reply format for coding agents.",
   "owner": {
     "name": "hiendang7613"
   },
   "plugins": [
     {
-      "name": "i-have-asd-ste100",
+      "name": "ihav-asd-ste100",
       "description": "Key-first bullets, a one-sentence Conclusion, then eight fixed status sections.",
       "source": "./",
       "category": "productivity"

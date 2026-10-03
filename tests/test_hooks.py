@@ -35,7 +35,7 @@ class HookTests(unittest.TestCase):
         """On by default since 0.1.1: nothing to do."""
 
     def opt_out(self, where=".claude"):
-        (self.home / where / ".i-have-asd-ste100-off").write_text("")
+        (self.home / where / ".ihav-asd-ste100-off").write_text("")
 
     def test_both_events_use_the_same_launcher(self):
         prompt_command = HOOKS["hooks"]["UserPromptSubmit"][0]["hooks"][0]["command"]
@@ -57,17 +57,17 @@ class HookTests(unittest.TestCase):
     def test_opt_out_file_in_either_home_or_environment_silences_both_events(self):
         start = {"hook_event_name": "SessionStart", "session_id": "a"}
         prompt = {"hook_event_name": "UserPromptSubmit", "session_id": "a", "prompt": "hi"}
-        self.assertIn(str(self.home / ".claude/.i-have-asd-ste100-off"), self.run_hook(start))
+        self.assertIn(str(self.home / ".claude/.ihav-asd-ste100-off"), self.run_hook(start))
         for where in (".claude", ".codex"):
             with self.subTest(where=where):
                 self.opt_out(where)
                 self.assertEqual((self.run_hook(start), self.run_hook(prompt)), ("", ""))
-                (self.home / where / ".i-have-asd-ste100-off").unlink()
-        for name in ("I_HAVE_ASD_STE100", "EVAL_I_HAVE_ASD_STE100"):
+                (self.home / where / ".ihav-asd-ste100-off").unlink()
+        for name in ("IHAV_ASD_STE100", "EVAL_IHAV_ASD_STE100"):
             with self.subTest(name=name):
                 self.assertEqual(self.run_hook(start, **{name: "OFF"}), "")
                 self.assertEqual(self.run_hook(prompt, **{name: "off"}), "")
-        self.assertIn("STE REPLY MODE ACTIVE", self.run_hook(start, I_HAVE_ASD_STE100="on"))
+        self.assertIn("STE REPLY MODE ACTIVE", self.run_hook(start, IHAV_ASD_STE100="on"))
 
     def test_prompt_reminder_is_one_line_and_short(self):
         self.opt_in()
@@ -88,11 +88,11 @@ class HookTests(unittest.TestCase):
         data = json.loads(self.run_hook(batch))
         self.assertEqual(data["hookSpecificOutput"]["hookEventName"], "PostToolBatch")
         self.assertRegex(data["hookSpecificOutput"]["additionalContext"],
-                         r"^i-have-asd-ste100 clock: (1[0-2]|[1-9]):[0-5][0-9] (AM|PM)$")
+                         r"^ihav-asd-ste100 clock: (1[0-2]|[1-9]):[0-5][0-9] (AM|PM)$")
         self.assertTrue(data["hookSpecificOutput"]["additionalContext"].isascii())
         self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "t", "prompt": "stop ste mode"})
         self.assertEqual(self.run_hook(batch), "")
-        self.assertEqual(self.run_hook(dict(batch, session_id="u"), I_HAVE_ASD_STE100="off"), "")
+        self.assertEqual(self.run_hook(dict(batch, session_id="u"), IHAV_ASD_STE100="off"), "")
         self.opt_out()
         self.assertEqual(self.run_hook(dict(batch, session_id="u")), "")
 
@@ -100,7 +100,7 @@ class HookTests(unittest.TestCase):
         script = ("import('./hooks/ste-mode.mjs').then(m => console.log([0, 9, 12, 16, 23].map(h => "
                   "m.clock(new Date(2026, 9, 2, h, 5))).join('|')))")
         out = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True, timeout=30,
-                             env=self.env | {"I_HAVE_ASD_STE100": "off"})
+                             env=self.env | {"IHAV_ASD_STE100": "off"})
         self.assertEqual(out.stdout.strip().splitlines()[-1], "12:05 AM|9:05 AM|12:05 PM|4:05 PM|11:05 PM")
 
     def test_stop_and_restart_work_per_session(self):
@@ -118,7 +118,7 @@ class HookTests(unittest.TestCase):
     def test_odd_session_ids_cannot_escape_the_state_directory(self):
         self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": "../../evil", "prompt": "normal mode"})
         written = [p for p in self.home.rglob("*.off")]
-        self.assertEqual([p.parent for p in written], [self.home / ".claude/.i-have-asd-ste100-sessions"])
+        self.assertEqual([p.parent for p in written], [self.home / ".claude/.ihav-asd-ste100-sessions"])
         self.assertEqual(list((self.home / "tmp").iterdir()), [])
 
     def test_stop_phrase_inside_a_longer_prompt_counts_unless_quoted(self):
@@ -143,7 +143,7 @@ class HookTests(unittest.TestCase):
         self.assertIn("STE REPLY MODE ACTIVE", self.run_hook(start, environment=environment))
         stop = {"hook_event_name": "UserPromptSubmit", "session_id": "codex-session", "prompt": "stop ste mode"}
         self.assertIn("off for this session", self.run_hook(stop, environment=environment))
-        marker = self.home / ".codex/.i-have-asd-ste100-sessions/codex-session.off"
+        marker = self.home / ".codex/.ihav-asd-ste100-sessions/codex-session.off"
         self.assertTrue(marker.is_file())
         self.assertEqual(self.run_hook({**stop, "prompt": "next"}, environment=environment), "")
 
