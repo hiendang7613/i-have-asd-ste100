@@ -73,8 +73,32 @@ def units(text):
     return round(count, 1)
 
 
+def fenced_blocks(text):
+    """Yield root-level fenced ranges and payloads; no Markdown dependency.
+
+    Tildes/backticks need at least three markers. A closing fence uses the same
+    marker and at least the opening length. An unclosed block reaches EOF.
+    This is a fence scanner, not a full Markdown/list-container parser.
+    """
+    opening = None
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        if opening is None:
+            match = re.match(r"^ {0,3}(`{3,}|~{3,})([^\r\n]*)", line)
+            if match and not (match[1][0] == '`' and '`' in match[2]):
+                opening = (offset, offset + len(line), match[1][0], len(match[1]))
+        else:
+            start, payload, marker, length = opening
+            if re.fullmatch(r" {0,3}" + re.escape(marker) + r"{%d,}[ \t]*" % length, line.rstrip('\r\n')):
+                yield start, offset + len(line), text[payload:offset]
+                opening = None
+        offset += len(line)
+    if opening is not None:
+        yield opening[0], len(text), text[opening[1]:]
+
+
 def strip_code(text):
-    return re.sub(r"```.*?```", " ", text, flags=re.S)
+    return mask_code(text)
 
 
 def sentences(text):
@@ -192,7 +216,11 @@ def duplicate_items(sections):
 
 def mask_code(text):
     """Blank out fenced code but keep its line count, so line numbers still match the reply."""
-    return re.sub(r"```.*?```", lambda match: "\n" * match.group().count("\n"), text, flags=re.S)
+    parts, previous = [], 0
+    for start, end, _ in fenced_blocks(text):
+        parts.extend((text[previous:start], '\n' * text[start:end].count('\n')))
+        previous = end
+    return ''.join(parts) + text[previous:]
 
 
 def zone_problems(text):
@@ -272,8 +300,8 @@ def check(text):
         violations.append("The reply contains emoji; write status in words.")
     if re.search(r"\*\*\[|^[-*]\s+\[[^\]]+\]", outside_code, re.M):
         violations.append("Labels use square brackets; write bold labels without them.")
-    if any(re.search(r"(?m)^\d\.\s+\*\*[^*]+:\*\*", block.group(1))
-           for block in re.finditer(r"```[^\n]*\n(.*?)```", text, re.S)):
+    if any(re.search(r"(?m)^\d\.\s+\*\*[^*]+:\*\*", payload)
+           for _, _, payload in fenced_blocks(text)):
         violations.append("The conclusion part is inside a code block; the reader would see raw markers.")
 
     body_sentences = sentences(body)
